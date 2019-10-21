@@ -25,6 +25,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	call	LCD_Setup	; setup LCD
 	movlw	0x04
 	call	LCD_set_position
+	call	LCD_clear_display
 	goto	start
 	
 	; ******* Main programme ****************************************

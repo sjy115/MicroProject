@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 
-    global  LCD_Setup, LCD_Write_Message
+    global  LCD_Setup, LCD_Write_Message, LCD_clear_display, LCD_set_position
 
 acs0    udata_acs   ; named variables in access ram
 LCD_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
@@ -8,9 +8,12 @@ LCD_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
 LCD_cnt_ms  res 1   ; reserve 1 byte for ms counter
 LCD_tmp	    res 1   ; reserve 1 byte for temporary use
 LCD_counter res 1   ; reserve 1 byte for counting through nessage
+DDRAM_add   res	1
+
 
 	constant    LCD_E=5	; LCD enable bit
     	constant    LCD_RS=4	; LCD register select bit
+	constant    DDRAM_bit = 7
 
 LCD	code
     
@@ -131,7 +134,19 @@ lcdlp1	decf 	LCD_cnt_l,F	; no carry when 0x00 -> 0xff
 	subwfb 	LCD_cnt_h,F	; no carry when 0x00 -> 0xff
 	bc 	lcdlp1		; carry, then loop again
 	return			; carry reset so return
+LCD_clear_display
+	movlw	b'00000001'
+	call	LCD_Send_Byte_I
+	return
 
+LCD_set_position
+	movwf	DDRAM_add
+	bsf	DDRAM_add, DDRAM_bit
+	movf	DDRAM_add, w
+	call	LCD_Send_Byte_I
+	movlw	.10		; wait 40us
+	call	LCD_delay_x4us
+	return
 
     end
 
