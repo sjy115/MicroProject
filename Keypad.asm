@@ -1,111 +1,108 @@
     #include p18f87k22.inc
     
-    global Keypad_Setup
+    global Keypad_Setup, Keypad_getKey, Keypad_fail_flag
+    extern LCD_delay_ms
 
 acs0    udata_acs   ; reserve data space in access ram
-cnt_upper	res 1   ; reserve one byte for a counter variable
-cnt_high	res 1
-cnt_low		res 1
 row_select	res 1
-column_select	res 1
-		
-Keypad code
-    
+Keypad_fail_flag res 1
+	
+
+	
+Keypad  code
+	
 Keypad_Setup
 	banksel	PADCFG1
 	bsf	PADCFG1,REPU,BANKED
+	bcf	EECON1, CFGS	; point to Flash program memory  
+	bsf	EECON1, EEPGD 	; access Flash program memory
+	bra	Keypad_reset
+	
+table	db  "C", "D", "E", "F", "B", "9", "6", "3", "0", "8", "5", "2", "A", "7", "4", "1"
+	
+Keypad_reset
+	movlw upper(table) ; address of data in PM
+	movwf TBLPTRU ; load upper bits to TBLPTRU
+	movlw high(table) ; address of data in PM
+	movwf TBLPTRH ; load high byte to TBLPTRH
+	movlw low(table) ; address of data in PM
+	movwf TBLPTRL ; load low byte to TBLPTRL
+	movlw	0x0
+	movwf	row_select
 	return
 
 Keypad_getKey
-	movlw	.4
-	movwf	cnt_row
-	movlw	.4
-	movwf	cnt_column
 get_row
 	clrf	LATE
 	movlw	0x0F
 	movwf	TRISE
+	movlw	.100
+	call	LCD_delay_ms
 row0
 	movlw	b'1110'
 	cpfseq	PORTE
 	bra	row1
-	movlw	.0
+	movlw	.1
 	movwf	row_select
 	bra	get_column
 row1	movlw	b'1101'
 	cpfseq	PORTE
 	bra	row2
-	movlw	.1
-	movwf	row_select
-	bra	get_column
-row2	movlw	b'1101'
-	cpfseq	PORTE
-	bra	row3
 	movlw	.2
 	movwf	row_select
 	bra	get_column
-row3	movlw	b'1101'
+row2	movlw	b'1011'
+	cpfseq	PORTE
+	bra	row3
+	movlw	.3
+	movwf	row_select
+	bra	get_column
+row3	movlw	b'0111'
 	cpfseq	PORTE
 	bra	key_fail
-	movlw	.3
+	movlw	.4
 	movwf	row_select
 	bra	get_column
 get_column
 	clrf	LATE
 	movlw	0xF0
 	movwf	TRISE
-	swapf	PORTE
-column0
-	movlw	b'1110'
+	movlw	.100
+	call	LCD_delay_ms
+column0	movlw	b'11100000'
 	cpfseq	PORTE
 	bra	column1
-	movlw	.3
-check	cpfseq	row_select
-	bra	inc_check
-	bra	check
-	movlw	'1'
-	return
-inc_check
-	decfsz	w
-	
-next	movlw	.1
-	cpfseq	row_select
-	bra	next
-	
-column1	movlw	b'1101'
+	movlw	.0
+	addwf	row_select
+	bra	decoder
+column1	movlw	b'11010000'
 	cpfseq	PORTE
 	bra	column2
-	movlw	.1
-	movwf	column_select
-	bra	key_output
-column2	movlw	b'1101'
+	movlw	.4
+	addwf	row_select
+	bra	decoder
+column2	movlw	b'10110000'
 	cpfseq	PORTE
 	bra	column3
-	movlw	.2
-	movwf	column_select
-	bra	key_output
-column3	movlw	b'1101'
+	movlw	.8
+	addwf	row_select
+	bra	decoder
+column3	movlw	b'01110000'
 	cpfseq	PORTE
 	bra	key_fail
-	movlw	.3
-	movwf	column_select
-key_output
+	movlw	.12
+	addwf	row_select
 	
-	
-	
-	
-key_fail	
-delb	movlw	upper(0x3FFFFF)	    ; load 22-bit number into
-	movwf	cnt_upper		    ; FR 0x15
-	movlw	high(0x3FFFFF)	    ;
-	movwf	cnt_high		    ; and FR 0x16
-	movlw	low(0x3FFFFF)	    ;
-	movwf	cnt_low		    ; and FR 0x17
-	
-	movlw	0x00		    ; W=0
-dloop	decf	cnt_low, f	    ; no carry when 0x00 -> 0xff
-	subwfb	cnt_high, f		    ; "
-	subwfb	cnt_upper, f		    ; "
-	bc	dloop		    ; if carry, then loop again
+decoder	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	decfsz	row_select	; count down to zero
+	bra	decoder		; keep going until finished
+	movlw	.1
+	movwf	Keypad_fail_flag
+	movf	TABLAT, W
 	return
+key_fail
+	movlw	.0
+	movwf	Keypad_fail_flag
+	return
+	
 	end
