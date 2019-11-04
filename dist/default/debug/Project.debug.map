@@ -1,11 +1,11 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Mon Nov 04 11:40:04 2019
+Linker Map File - Created Mon Nov 04 16:32:53 2019
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                    .cinit    romdata   0x000000    program   0x000002
-                    .code       code   0x000002    program   0x00001a
+                    .code       code   0x000002    program   0x0000fa
 .config_300000_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300000    program   0x000001
 .config_300001_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300001    program   0x000001
 .config_300002_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300002    program   0x000001
@@ -19,33 +19,68 @@ Linker Map File - Created Mon Nov 04 11:40:04 2019
 .config_30000B_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x30000b    program   0x000001
 .config_30000C_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x30000c    program   0x000001
 .config_30000D_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x30000d    program   0x000001
+                     acs0      udata   0x000000       data   0x000005
 
 
 
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x00001b      
+                            0x000000    0x0000fb      
                             0x300000    0x300006      
                             0x300008    0x30000d      
-            41 out of 132120 program addresses used, program memory utilization is 0%
+            265 out of 132120 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                   SPI_in   0x000008    program     static H:\Desktop\Microprocessor\Project\main.asm
-              _.code_0016   0x000018    program     static H:\Desktop\Microprocessor\Project\main.asm
-                    setup   0x000002    program     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_begin   0x000002    program     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_delay   0x0000f2    program     static H:\Desktop\Microprocessor\Project\main.asm
+             LCD_delay_ms   0x0000d0    program     static H:\Desktop\Microprocessor\Project\main.asm
+           LCD_delay_x4us   0x0000de    program     static H:\Desktop\Microprocessor\Project\main.asm
+                  PLLinit   0x000072    program     static H:\Desktop\Microprocessor\Project\main.asm
+           SPI_MasterInit   0x0000ba    program     static H:\Desktop\Microprocessor\Project\main.asm
+       SPI_MasterTransmit   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeCMD   0x000096    program     static H:\Desktop\Microprocessor\Project\main.asm
+            SPI_writeDATA   0x0000a8    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeREG   0x00008c    program     static H:\Desktop\Microprocessor\Project\main.asm
+            Wait_Transmit   0x0000c8    program     static H:\Desktop\Microprocessor\Project\main.asm
+              _.code_0050   0x000052    program     static H:\Desktop\Microprocessor\Project\main.asm
+              _.code_006C   0x00006e    program     static H:\Desktop\Microprocessor\Project\main.asm
+                   lcdlp1   0x0000f4    program     static H:\Desktop\Microprocessor\Project\main.asm
+                   lcdlp2   0x0000d2    program     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_cnt_h   0x000003       data     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_cnt_l   0x000002       data     static H:\Desktop\Microprocessor\Project\main.asm
+               LCD_cnt_ms   0x000004       data     static H:\Desktop\Microprocessor\Project\main.asm
+                input_cmd   0x000000       data     static H:\Desktop\Microprocessor\Project\main.asm
+               input_data   0x000001       data     static H:\Desktop\Microprocessor\Project\main.asm
 
 
 
                               Symbols - Sorted by Address
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                    setup   0x000002    program     static H:\Desktop\Microprocessor\Project\main.asm
-                   SPI_in   0x000008    program     static H:\Desktop\Microprocessor\Project\main.asm
-              _.code_0016   0x000018    program     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_begin   0x000002    program     static H:\Desktop\Microprocessor\Project\main.asm
+              _.code_0050   0x000052    program     static H:\Desktop\Microprocessor\Project\main.asm
+              _.code_006C   0x00006e    program     static H:\Desktop\Microprocessor\Project\main.asm
+                  PLLinit   0x000072    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeREG   0x00008c    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeCMD   0x000096    program     static H:\Desktop\Microprocessor\Project\main.asm
+            SPI_writeDATA   0x0000a8    program     static H:\Desktop\Microprocessor\Project\main.asm
+           SPI_MasterInit   0x0000ba    program     static H:\Desktop\Microprocessor\Project\main.asm
+       SPI_MasterTransmit   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
+            Wait_Transmit   0x0000c8    program     static H:\Desktop\Microprocessor\Project\main.asm
+             LCD_delay_ms   0x0000d0    program     static H:\Desktop\Microprocessor\Project\main.asm
+                   lcdlp2   0x0000d2    program     static H:\Desktop\Microprocessor\Project\main.asm
+           LCD_delay_x4us   0x0000de    program     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_delay   0x0000f2    program     static H:\Desktop\Microprocessor\Project\main.asm
+                   lcdlp1   0x0000f4    program     static H:\Desktop\Microprocessor\Project\main.asm
+                input_cmd   0x000000       data     static H:\Desktop\Microprocessor\Project\main.asm
+               input_data   0x000001       data     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_cnt_l   0x000002       data     static H:\Desktop\Microprocessor\Project\main.asm
+                LCD_cnt_h   0x000003       data     static H:\Desktop\Microprocessor\Project\main.asm
+               LCD_cnt_ms   0x000004       data     static H:\Desktop\Microprocessor\Project\main.asm
 
 
