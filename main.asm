@@ -48,52 +48,13 @@ LCD_begin
     call    LCD_delay_ms
     
     call    SPI_MasterInit
-    
-    
+    ----
     movlw   0x91
     movwf   input_cmd
-    call    SPI_writeCMD
-    
-    movlw   0x0A
+    movlw   0xA2
     movwf   input_data
-    call    SPI_writeDATA
-    
-    movlw   0x92
-    movwf   input_cmd
-    call    SPI_writeCMD
-    
-  writeData(x0 >> 8);
-
-  /* Set Y */
-  writeCommand(0x93);
-  writeData(y0);
-  writeCommand(0x94);
-  writeData(y0 >> 8);
-
-  /* Set X1 */
-  writeCommand(0x95);
-  writeData(x1);
-  writeCommand(0x96);
-  writeData((x1) >> 8);
-
-  /* Set Y1 */
-  writeCommand(0x97);
-  writeData(y1);
-  writeCommand(0x98);
-  writeData((y1) >> 8);
-
-  /* Set Color */
-  writeCommand(0x63);
-  writeData((color & 0xf800) >> 11);
-  writeCommand(0x64);
-  writeData((color & 0x07e0) >> 5);
-  writeCommand(0x65);
-  writeData((color & 0x001f));
-
-  /* Draw! */
-  writeCommand(RA8875_DCR);
-  writeData(0x80);
-  
+    call    SPI_writeREG
+    -----
     goto    $
 SPI_writeREG
     call    SPI_writeCMD
