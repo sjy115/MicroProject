@@ -1,30 +1,19 @@
     #include p18f87k22.inc
-    
 
-#define	RST	0
-#define MOSI	4
-#define MISO	5
-#define SCK	6
-#define CS	7
+    global Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
+    
+#define	RST		0
+#define	MOSI		4
+#define	MISO		5
+#define	SCK		6
+#define CS		7
+
 
 ;Command/Data pins for SPI
 #define RA8875_DATAWRITE        0x00 
 #define RA8875_DATAREAD         0x40 
 #define RA8875_CMDWRITE         0x80
 #define RA8875_CMDREAD          0xC0
-
-#define pixclk		0x81
-#define	hsync_nondisp   26
-#define hsync_start     32
-#define hsync_pw        96
-#define hsync_finetune  0
-#define vsync_nondisp   32
-#define vsync_start     23
-#define vsync_pw        2
-#define _voffset        0
-    
-#define	_width		800
-#define	_height		480  
 
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	res 1
@@ -42,20 +31,23 @@ LCD_begin
     bsf	    LATD, CS
     bcf	    LATD, RST
     movlw   .100
-    call    LCD_delay_ms
+    call    Delay_ms
     bsf	    LATD, RST
     movlw   .100
-    call    LCD_delay_ms
+    call    Delay_ms
     
     call    SPI_MasterInit
-    ----
-    movlw   0x91
-    movwf   input_cmd
-    movlw   0xA2
-    movwf   input_data
-    call    SPI_writeREG
-    -----
+    call    LCD_PLLinit
+    call    LCD_Initialisation
+    call    LCD_DisplayOn
+    call    LCD_GPIOX ;// Enable TFT - display enable tied to GPIOX
+    call    LCD_PWM1config; // PWM output for backlight
+    call    LCD_PWM1out;
+
+    // With hardware accelleration this is instant
+    call    LCD_FillScreen
     goto    $
+    
 SPI_writeREG
     call    SPI_writeCMD
     call    SPI_writeDATA
@@ -95,30 +87,30 @@ Wait_Transmit ; Wait for transmission to complete
     bcf PIR2, SSP2IF ; clear interrupt flag
     return
 
-LCD_delay_ms		    ; delay given in ms in W
-	movwf	LCD_cnt_ms
-lcdlp2	movlw	.250	    ; 1 ms delay
-	call	LCD_delay_x4us	
-	decfsz	LCD_cnt_ms
-	bra	lcdlp2
+Delay_ms		    ; Delay given in ms in W
+	movwf	Delay_cnt_ms
+lp2	movlw	.250	    ; 1 ms Delay
+	call	Delay_Delay_x4us	
+	decfsz	Delay_cnt_ms
+	bra	lp2
 	return
 
-LCD_delay_x4us		    ; delay given in chunks of 4 microsecond in W
-	movwf	LCD_cnt_l   ; now need to multiply by 16
-	swapf   LCD_cnt_l,F ; swap nibbles
+Delay_x4us		    ; Delay given in chunks of 4 microsecond in W
+	movwf	Delay_cnt_l   ; now need to multiply by 16
+	swapf   Delay_cnt_l,F ; swap nibbles
 	movlw	0x0f	    
-	andwf	LCD_cnt_l,W ; move low nibble to W
-	movwf	LCD_cnt_h   ; then to LCD_cnt_h
+	andwf	Delay_cnt_l,W ; move low nibble to W
+	movwf	Delay_cnt_h   ; then to LCD_cnt_h
 	movlw	0xf0	    
-	andwf	LCD_cnt_l,F ; keep high nibble in LCD_cnt_l
-	call	LCD_delay
+	andwf	Delay_cnt_l,F ; keep high nibble in LCD_cnt_l
+	call	Delay
 	return
 
-LCD_delay			; delay routine	4 instruction loop == 250ns	    
+Delay			; Delay routine	4 instruction loop == 250ns	    
 	movlw 	0x00		; W=0
-lcdlp1	decf 	LCD_cnt_l,F	; no carry when 0x00 -> 0xff
-	subwfb 	LCD_cnt_h,F	; no carry when 0x00 -> 0xff
-	bc 	lcdlp1		; carry, then loop again
+lp1	decf 	Delay_cnt_l,F	; no carry when 0x00 -> 0xff
+	subwfb 	Delay_cnt_h,F	; no carry when 0x00 -> 0xff
+	bc 	lp1		; carry, then loop again
 	return			; carry reset so return
 	
     end
