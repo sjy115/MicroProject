@@ -1,7 +1,8 @@
     #include p18f87k22.inc
 
     global Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
-    
+    extern LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PWM1config,LCD_PWM1out,LCD_FillScreen
+
 #define	RST		0
 #define	MOSI		4
 #define	MISO		5
@@ -18,11 +19,11 @@
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	res 1
 input_data	res 1
-LCD_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
-LCD_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
-LCD_cnt_ms  res 1   ; reserve 1 byte for ms counter
+Delay_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
+Delay_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
+Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
   
-    code
+main    code	0
     
 LCD_begin
     clrf    LATD
@@ -35,19 +36,21 @@ LCD_begin
     bsf	    LATD, RST
     movlw   .100
     call    Delay_ms
+
     
     call    SPI_MasterInit
+    
     call    LCD_PLLinit
     call    LCD_Initialisation
     call    LCD_DisplayOn
     call    LCD_GPIOX ;// Enable TFT - display enable tied to GPIOX
     call    LCD_PWM1config; // PWM output for backlight
     call    LCD_PWM1out;
-
-    // With hardware accelleration this is instant
-    call    LCD_FillScreen
-    goto    $
     
+    ;// With hardware accelleration this is instant
+    call    LCD_FillScreen
+    
+    goto    $
 SPI_writeREG
     call    SPI_writeCMD
     call    SPI_writeDATA
@@ -90,7 +93,7 @@ Wait_Transmit ; Wait for transmission to complete
 Delay_ms		    ; Delay given in ms in W
 	movwf	Delay_cnt_ms
 lp2	movlw	.250	    ; 1 ms Delay
-	call	Delay_Delay_x4us	
+	call	Delay_x4us	
 	decfsz	Delay_cnt_ms
 	bra	lp2
 	return

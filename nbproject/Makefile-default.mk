@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.asm config.asm Setup.asm RA8875.asm
+SOURCEFILES_QUOTED_IF_SPACED=main.asm config.asm Setup.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/Setup.o ${OBJECTDIR}/RA8875.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/config.o.d ${OBJECTDIR}/Setup.o.d ${OBJECTDIR}/RA8875.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/Setup.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/config.o.d ${OBJECTDIR}/Setup.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/Setup.o ${OBJECTDIR}/RA8875.o
+OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/Setup.o
 
 # Source Files
-SOURCEFILES=main.asm config.asm Setup.asm RA8875.asm
+SOURCEFILES=main.asm config.asm Setup.asm
 
 
 CFLAGS=
@@ -118,14 +118,6 @@ ${OBJECTDIR}/Setup.o: Setup.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d "${OBJECTDIR}/Setup.o"
 	@${FIXDEPS} "${OBJECTDIR}/Setup.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-${OBJECTDIR}/RA8875.o: RA8875.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/RA8875.o.d 
-	@${RM} ${OBJECTDIR}/RA8875.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/RA8875.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/RA8875.lst\" -e\"${OBJECTDIR}/RA8875.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/RA8875.o\" \"RA8875.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/RA8875.o"
-	@${FIXDEPS} "${OBJECTDIR}/RA8875.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
-	
 else
 ${OBJECTDIR}/main.o: main.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -150,14 +142,6 @@ ${OBJECTDIR}/Setup.o: Setup.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Setup.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Setup.lst\" -e\"${OBJECTDIR}/Setup.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Setup.o\" \"Setup.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/Setup.o"
 	@${FIXDEPS} "${OBJECTDIR}/Setup.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
-	
-${OBJECTDIR}/RA8875.o: RA8875.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/RA8875.o.d 
-	@${RM} ${OBJECTDIR}/RA8875.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/RA8875.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/RA8875.lst\" -e\"${OBJECTDIR}/RA8875.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/RA8875.o\" \"RA8875.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/RA8875.o"
-	@${FIXDEPS} "${OBJECTDIR}/RA8875.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 
