@@ -1,7 +1,7 @@
     #include p18f87k22.inc
 
     global Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
-    extern LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PWM1config,LCD_PWM1out,LCD_FillScreen
+    extern LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PWM1config,LCD_FillScreen,LCD_PWM1out, input_cmd, input_data
 
 #define	RST		0
 #define	MOSI		4
@@ -17,8 +17,8 @@
 #define RA8875_CMDREAD          0xC0
 
 acs0    udata_acs   ; reserve data space in access ram
-input_cmd	res 1
-input_data	res 1
+;input_cmd	res 1
+;input_data	res 1
 Delay_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Delay_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
 Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
@@ -27,18 +27,22 @@ main    code	0
     
 LCD_begin
     clrf    LATD
+    bsf	    LATD, CS
+    bsf	    LATD, MOSI
+    bsf	    LATD, SCK
+    
     clrf    TRISD
     bsf	    TRISD, MISO
-    bsf	    LATD, CS
+    
     bcf	    LATD, RST
     movlw   .100
     call    Delay_ms
     bsf	    LATD, RST
     movlw   .100
     call    Delay_ms
-
     
     call    SPI_MasterInit
+
     
     call    LCD_PLLinit
     call    LCD_Initialisation
@@ -55,12 +59,13 @@ SPI_writeREG
     call    SPI_writeCMD
     call    SPI_writeDATA
     return
+
     
 SPI_writeCMD
     bcf	    LATD, CS
     movlw   RA8875_CMDWRITE
     call    SPI_MasterTransmit
-    movlw   input_cmd
+    movf    input_cmd, W
     call    SPI_MasterTransmit
     bsf	    LATD, CS
     return
@@ -69,7 +74,7 @@ SPI_writeDATA
     bcf	    LATD, CS
     movlw   RA8875_DATAWRITE
     call    SPI_MasterTransmit
-    movlw   input_data
+    movf    input_data, W
     call    SPI_MasterTransmit
     bsf	    LATD, CS    
     return
