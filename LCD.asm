@@ -101,7 +101,7 @@
 #define RA8875_MCLR_FULL        0x00 ;< See datasheet
 #define RA8875_MCLR_ACTIVE      0x40 ;< See datasheet
 
-#define RA8875_DCR                    0x90 ;< See datasheet
+#define RA8875_DCR                    0x90 ;< See datashe et
 #define RA8875_DCR_LINESQUTRI_START   0x80 ;< See datasheet
 #define RA8875_DCR_LINESQUTRI_STOP    0x00 ;< See datasheet
 #define RA8875_DCR_LINESQUTRI_STATUS  0x80 ;< See datasheet
@@ -236,9 +236,10 @@
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	res 1
 input_data	res 1
-Delay_cnt_l   res 1   ; reserve 1 byte for variable Delay_cnt_l
-Delay_cnt_h   res 1   ; reserve 1 byte for variable Delay_cnt_h
-Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
+Delay_cnt_l	res 1   ; reserve 1 byte for variable Delay_cnt_l
+Delay_cnt_h	res 1   ; reserve 1 byte for variable Delay_cnt_h
+Delay_cnt_ms	res 1   ; reserve 1 byte for ms counter
+
   
 Setup	code
 LCD_DisplayOn
@@ -274,7 +275,9 @@ LCD_PWM1out
     return
 
 LCD_FillScreen
-    call    LCD_RectHelper
+    ;call    LCD_RectHelper
+    ;call    LCD_TriHelper
+    call    LCD_LineHelper
     return
     
 LCD_RectHelper
@@ -329,7 +332,7 @@ LCD_RectHelper
     movlw	0x97
     movwf	input_cmd
     call	SPI_writeCMD
-    movlw	.223;.799 & 0xFF
+    movlw	.0 ;.479 & 0xFF
     movwf	input_data
     call	SPI_writeDATA
     movlw	0x98
@@ -413,10 +416,10 @@ LCD_PLLinit
 
   ; Horizontal settings registers ;
 LCD_Initialisation
-  movlw   RA8875_HDWR
-  movwf   input_cmd
-  movlw   .99						;(LCD_width / 8) - 1)
-  movwf	  input_data
+    movlw   RA8875_HDWR
+    movwf   input_cmd
+    movlw   .99						;(LCD_width / 8) - 1)
+    movwf  input_data
   call    SPI_writeREG
   movlw   RA8875_HNDFTR
   movwf   input_cmd
@@ -533,4 +536,240 @@ LCD_Initialisation
   call	  Delay_ms
   return
   
-  end
+LCD_TriHelper	;200, 15, 250, 100, 150, 125, RA8875_BLACK
+    ;/* Set X1 */
+    movlw	0x91
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x92
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Y1 */
+    movlw	0x93
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x94
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Set X2 */
+    movlw	0x95
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x96
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.1
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Y2 */
+    movlw	0x97
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x98
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Set X3 */
+    movlw	0xA9
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.10
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0xAA
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Y3 */
+    movlw	0xAB
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.10
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0xAC
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Color */
+    movlw	0x63
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31		;(color & 0xf800) >> 11
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x64		
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.63		;(color & 0x07e0) >> 5
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x65
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31		;(color & 0x001f)
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Draw! */
+    movlw	RA8875_DCR
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	0xA1
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Wait for the command to finish */
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    ;waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+    return
+    
+LCD_LineHelper
+    ;/* Set X1 */
+    movlw	0x91
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x92
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Y1 */
+    movlw	0x93
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.0
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x94
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.1
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Set X2 */
+    movlw	0x95
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x96
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.3
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Y2 */
+    movlw	0x97
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.100
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x98
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.1
+    movwf	input_data
+    call	SPI_writeDATA
+    
+    ;/* Set Color */
+    movlw	0x63
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31		;(color & 0xf800) >> 11
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x64		
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.63		;(color & 0x07e0) >> 5
+    movwf	input_data
+    call	SPI_writeDATA
+    movlw	0x65
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	.31		;(color & 0x001f)
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Draw! */
+    movlw	RA8875_DCR
+    movwf	input_cmd
+    call	SPI_writeCMD
+    movlw	0x80
+    movwf	input_data
+    call	SPI_writeDATA
+
+    ;/* Wait for the command to finish */
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    call	Delay_ms
+    movlw	.255
+    return
+    end
+

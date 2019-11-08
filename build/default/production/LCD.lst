@@ -1,4 +1,4 @@
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  1
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -15,137 +15,865 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00002 
-  0000                00003     global Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
-  0000                00004     extern LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PW
-                            M1config,LCD_PWM1out,LCD_FillScreen
-                      00005 
-                      00006 #define RST             0
-                      00007 #define MOSI            4
-                      00008 #define MISO            5
-                      00009 #define SCK             6
-                      00010 #define CS              7
-                      00011 
-                      00012 
-                      00013 ;Command/Data pins for SPI
-                      00014 #define RA8875_DATAWRITE        0x00 
-                      00015 #define RA8875_DATAREAD         0x40 
-                      00016 #define RA8875_CMDWRITE         0x80
-                      00017 #define RA8875_CMDREAD          0xC0
+                      00002     
+  0000                00003     global LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PW
+                            M1config,LCD_PWM1out,LCD_FillScreen, input_cmd, input_data
+  0000                00004     extern Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
+                      00005    
+                      00006 #define LCD_width               800
+                      00007 #define LCD_height              480
+                      00008   
+                      00009 ; Colors (RGB565)
+                      00010 #define RA8875_BLACK            0x0000 ;< Black Color
+                      00011 #define RA8875_BLUE             0x001F ;< Blue Color
+                      00012 #define RA8875_RED              0xF800 ;< Red Color
+                      00013 #define RA8875_GREEN            0x07E0 ;< Green Color
+                      00014 #define RA8875_CYAN             0x07FF ;< Cyan Color
+                      00015 #define RA8875_MAGENTA          0xF81F ;< Magenta Color
+                      00016 #define RA8875_YELLOW           0xFFE0 ;< Yellow Color
+                      00017 #define RA8875_WHITE            0xFFFF ;< White Color
                       00018 
-                      00019 acs0    udata_acs   ; reserve data space in access ram
-000000                00020 input_cmd       res 1
-000001                00021 input_data      res 1
-000002                00022 Delay_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
-000003                00023 Delay_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
-000004                00024 Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
-                      00025   
-                      00026 main    code    0
-                      00027     
-000000                00028 LCD_begin
-000000 6A8C           00029     clrf    LATD
-000002 6A95           00030     clrf    TRISD
-000004 8A95           00031     bsf     TRISD, MISO
-000006 8E8C           00032     bsf     LATD, CS
-000008 908C           00033     bcf     LATD, RST
-00000A 0E64           00034     movlw   .100
-00000C EC?? F???      00035     call    Delay_ms
-000010 808C           00036     bsf     LATD, RST
-000012 0E64           00037     movlw   .100
-000014 EC?? F???      00038     call    Delay_ms
-000018 EF?? F???      00039     goto    $
-                      00040     
-00001C EC?? F???      00041     call    SPI_MasterInit
-000020 EC?? F???      00042     call    LCD_PLLinit
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  2
+                      00019 ; Command/Data pins for SPI
+                      00020 #define RA8875_DATAWRITE        0x00 ;< See datasheet
+                      00021 #define RA8875_DATAREAD         0x40 ;< See datasheet
+                      00022 #define RA8875_CMDWRITE         0x80 ;< See datasheet
+                      00023 #define RA8875_CMDREAD          0xC0 ;< See datasheet
+                      00024 
+                      00025 ; Registers & bits
+                      00026 #define RA8875_PWRR             0x01 ;< See datasheet
+                      00027 #define RA8875_PWRR_DISPON      0x80 ;< See datasheet
+                      00028 #define RA8875_PWRR_DISPOFF     0x00 ;< See datasheet
+                      00029 #define RA8875_PWRR_SLEEP       0x02 ;< See datasheet
+                      00030 #define RA8875_PWRR_NORMAL      0x00 ;< See datasheet
+                      00031 #define RA8875_PWRR_SOFTRESET   0x01 ;< See datasheet
+                      00032 
+                      00033 #define RA8875_MRWC             0x02 ;< See datasheet
+                      00034 
+                      00035 #define RA8875_GPIOX            0xC7 ;< See datasheet
+                      00036 
+                      00037 #define RA8875_PLLC1            0x88 ;< See datasheet
+                      00038 #define RA8875_PLLC1_PLLDIV2    0x80 ;< See datasheet
+                      00039 #define RA8875_PLLC1_PLLDIV1    0x00 ;< See datasheet
+                      00040 
+                      00041 #define RA8875_PLLC2            0x89 ;< See datasheet
+                      00042 #define RA8875_PLLC2_DIV1       0x00 ;< See datasheet
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000024 EC?? F???      00043     call    LCD_Initialisation
-000028 EC?? F???      00044     call    LCD_DisplayOn
-00002C EC?? F???      00045     call    LCD_GPIOX ;// Enable TFT - display enable tied to GPIOX
-000030 EC?? F???      00046     call    LCD_PWM1config; // PWM output for backlight
-000034 EC?? F???      00047     call    LCD_PWM1out;
-                      00048 
-                      00049     ;// With hardware accelleration this is instant
-000038 EC?? F???      00050     call    LCD_FillScreen
-                      00051     
-                      00052     
-00003C                00053 SPI_writeREG
-00003C EC?? F???      00054     call    SPI_writeCMD
-000040 EC?? F???      00055     call    SPI_writeDATA
-000044 0012           00056     return
-                      00057     
-000046                00058 SPI_writeCMD
-000046 9E8C           00059     bcf     LATD, CS
-000048 0E80           00060     movlw   RA8875_CMDWRITE
-00004A EC?? F???      00061     call    SPI_MasterTransmit
-00004E 0E??           00062     movlw   input_cmd
-000050 EC?? F???      00063     call    SPI_MasterTransmit
-000054 8E8C           00064     bsf     LATD, CS
-000056 0012           00065     return
-                      00066     
-000058                00067 SPI_writeDATA
-000058 9E8C           00068     bcf     LATD, CS
-00005A 0E00           00069     movlw   RA8875_DATAWRITE
-00005C EC?? F???      00070     call    SPI_MasterTransmit
-000060 0E??           00071     movlw   input_data
-000062 EC?? F???      00072     call    SPI_MasterTransmit
-000066 8E8C           00073     bsf     LATD, CS    
-000068 0012           00074     return
-                      00075     
-00006A                00076 SPI_MasterInit ; Set Clock edge to negative
-00006A 9C68           00077     bcf SSP2STAT, CKE
-                      00078     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-00006C 0E32           00079     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-00006E 6E67           00080     movwf SSP2CON1
-000070 0012           00081     return
-                      00082     
-000072                00083 SPI_MasterTransmit ; Start transmission of data (held in W)
-000072 6E6A           00084     movwf SSP2BUF
-                      00085     
-000074                00086 Wait_Transmit ; Wait for transmission to complete
-000074 AAA1           00087     btfss PIR2, SSP2IF
-000076 D???           00088     bra Wait_Transmit
-000078 9AA1           00089     bcf PIR2, SSP2IF ; clear interrupt flag
-00007A 0012           00090     return
+                      00043 #define RA8875_PLLC2_DIV2       0x01 ;< See datasheet
+                      00044 #define RA8875_PLLC2_DIV4       0x02 ;< See datasheet
+                      00045 #define RA8875_PLLC2_DIV8       0x03 ;< See datasheet
+                      00046 #define RA8875_PLLC2_DIV16      0x04 ;< See datasheet
+                      00047 #define RA8875_PLLC2_DIV32      0x05 ;< See datasheet
+                      00048 #define RA8875_PLLC2_DIV64      0x06 ;< See datasheet
+                      00049 #define RA8875_PLLC2_DIV128     0x07 ;< See datasheet
+                      00050 
+                      00051 #define RA8875_SYSR             0x10 ;< See datasheet
+                      00052 #define RA8875_SYSR_8BPP        0x00 ;< See datasheet
+                      00053 #define RA8875_SYSR_16BPP       0x0C ;< See datasheet
+                      00054 #define RA8875_SYSR_MCU8        0x00 ;< See datasheet
+                      00055 #define RA8875_SYSR_MCU16       0x03 ;< See datasheet
+                      00056 
+                      00057 #define RA8875_PCSR             0x04 ;< See datasheet
+                      00058 #define RA8875_PCSR_PDATR       0x00 ;< See datasheet
+                      00059 #define RA8875_PCSR_PDATL       0x80 ;< See datasheet
+                      00060 #define RA8875_PCSR_CLK         0x00 ;< See datasheet
+                      00061 #define RA8875_PCSR_2CLK        0x01 ;< See datasheet
+                      00062 #define RA8875_PCSR_4CLK        0x02 ;< See datasheet
+                      00063 #define RA8875_PCSR_8CLK        0x03 ;< See datasheet
+                      00064 
+                      00065 #define RA8875_HDWR             0x14 ;< See datasheet
+                      00066 
+                      00067 #define RA8875_HNDFTR           0x15 ;< See datasheet
+                      00068 #define RA8875_HNDFTR_DE_HIGH   0x00 ;< See datasheet
+                      00069 #define RA8875_HNDFTR_DE_LOW    0x80 ;< See datasheet
+                      00070 
+                      00071 #define RA8875_HNDR             0x16 ;< See datasheet
+                      00072 #define RA8875_HSTR             0x17 ;< See datasheet
+                      00073 #define RA8875_HPWR             0x18 ;< See datasheet
+                      00074 #define RA8875_HPWR_LOW         0x00 ;< See datasheet
+                      00075 #define RA8875_HPWR_HIGH        0x80 ;< See datasheet
+                      00076 
+                      00077 #define RA8875_VDHR0            0x19 ;< See datasheet
+                      00078 #define RA8875_VDHR1            0x1A ;< See datasheet
+                      00079 #define RA8875_VNDR0            0x1B ;< See datasheet
+                      00080 #define RA8875_VNDR1            0x1C ;< See datasheet
+                      00081 #define RA8875_VSTR0            0x1D ;< See datasheet
+                      00082 #define RA8875_VSTR1            0x1E ;< See datasheet
+                      00083 #define RA8875_VPWR             0x1F ;< See datasheet
+                      00084 #define RA8875_VPWR_LOW         0x00 ;< See datasheet
+                      00085 #define RA8875_VPWR_HIGH        0x80 ;< See datasheet
+                      00086 
+                      00087 #define RA8875_HSAW0            0x30 ;< See datasheet
+                      00088 #define RA8875_HSAW1            0x31 ;< See datasheet
+                      00089 #define RA8875_VSAW0            0x32 ;< See datasheet
+                      00090 #define RA8875_VSAW1            0x33 ;< See datasheet
                       00091 
-00007C                00092 Delay_ms                    ; Delay given in ms in W
-00007C 6E??           00093         movwf   Delay_cnt_ms
-00007E 0EFA           00094 lp2     movlw   .250        ; 1 ms Delay
-000080 EC?? F???      00095         call    Delay_x4us      
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  3
+                      00092 #define RA8875_HEAW0            0x34 ;< See datasheet
+                      00093 #define RA8875_HEAW1            0x35 ;< See datasheet
+                      00094 #define RA8875_VEAW0            0x36 ;< See datasheet
+                      00095 #define RA8875_VEAW1            0x37 ;< See datasheet
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000084 2E??           00096         decfsz  Delay_cnt_ms
-000086 D???           00097         bra     lp2
-000088 0012           00098         return
-                      00099 
-00008A                00100 Delay_x4us                  ; Delay given in chunks of 4 microsecond in W
-00008A 6E??           00101         movwf   Delay_cnt_l   ; now need to multiply by 16
-00008C 3A??           00102         swapf   Delay_cnt_l,F ; swap nibbles
-00008E 0E0F           00103         movlw   0x0f        
-000090 14??           00104         andwf   Delay_cnt_l,W ; move low nibble to W
-000092 6E??           00105         movwf   Delay_cnt_h   ; then to LCD_cnt_h
-000094 0EF0           00106         movlw   0xf0        
-000096 16??           00107         andwf   Delay_cnt_l,F ; keep high nibble in LCD_cnt_l
-000098 EC?? F???      00108         call    Delay
-00009C 0012           00109         return
-                      00110 
-00009E                00111 Delay                   ; Delay routine 4 instruction loop == 250ns         
-00009E 0E00           00112         movlw   0x00            ; W=0
-0000A0 06??           00113 lp1     decf    Delay_cnt_l,F   ; no carry when 0x00 -> 0xff
-0000A2 5A??           00114         subwfb  Delay_cnt_h,F   ; no carry when 0x00 -> 0xff
-0000A4 E2??           00115         bc      lp1             ; carry, then loop again
-0000A6 0012           00116         return                  ; carry reset so return
-                      00117         
-                      00118     end
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  4
+                      00096 
+                      00097 #define RA8875_MCLR             0x8E ;< See datasheet
+                      00098 #define RA8875_MCLR_START       0x80 ;< See datasheet
+                      00099 #define RA8875_MCLR_STOP        0x00 ;< See datasheet
+                      00100 #define RA8875_MCLR_READSTATUS  0x80 ;< See datasheet
+                      00101 #define RA8875_MCLR_FULL        0x00 ;< See datasheet
+                      00102 #define RA8875_MCLR_ACTIVE      0x40 ;< See datasheet
+                      00103 
+                      00104 #define RA8875_DCR                    0x90 ;< See datashe et
+                      00105 #define RA8875_DCR_LINESQUTRI_START   0x80 ;< See datasheet
+                      00106 #define RA8875_DCR_LINESQUTRI_STOP    0x00 ;< See datasheet
+                      00107 #define RA8875_DCR_LINESQUTRI_STATUS  0x80 ;< See datasheet
+                      00108 #define RA8875_DCR_CIRCLE_START       0x40 ;< See datasheet
+                      00109 #define RA8875_DCR_CIRCLE_STATUS      0x40 ;< See datasheet
+                      00110 #define RA8875_DCR_CIRCLE_STOP        0x00 ;< See datasheet
+                      00111 #define RA8875_DCR_FILL               0x20 ;< See datasheet
+                      00112 #define RA8875_DCR_NOFILL             0x00 ;< See datasheet
+                      00113 #define RA8875_DCR_DRAWLINE           0x00 ;< See datasheet
+                      00114 #define RA8875_DCR_DRAWTRIANGLE       0x01 ;< See datasheet
+                      00115 #define RA8875_DCR_DRAWSQUARE         0x10 ;< See datasheet
+                      00116 
+                      00117 #define RA8875_ELLIPSE                0xA0 ;< See datasheet
+                      00118 #define RA8875_ELLIPSE_STATUS         0x80 ;< See datasheet
+                      00119 
+                      00120 #define RA8875_MWCR0            0x40 ;< See datasheet
+                      00121 #define RA8875_MWCR0_GFXMODE    0x00 ;< See datasheet
+                      00122 #define RA8875_MWCR0_TXTMODE    0x80 ;< See datasheet
+                      00123 #define RA8875_MWCR0_CURSOR     0x40 ;< See datasheet
+                      00124 #define RA8875_MWCR0_BLINK      0x20 ;< See datasheet
+                      00125 
+                      00126 #define RA8875_MWCR0_DIRMASK    0x0C ;< Bitmask for Write Direction
+                      00127 #define RA8875_MWCR0_LRTD       0x00 ;< Left->Right then Top->Down
+                      00128 #define RA8875_MWCR0_RLTD       0x04 ;< Right->Left then Top->Down
+                      00129 #define RA8875_MWCR0_TDLR       0x08 ;< Top->Down then Left->Right
+                      00130 #define RA8875_MWCR0_DTLR       0x0C ;< Down->Top then Left->Right
+                      00131 
+                      00132 #define RA8875_BTCR             0x44 ;< See datasheet
+                      00133 #define RA8875_CURH0            0x46 ;< See datasheet
+                      00134 #define RA8875_CURH1            0x47 ;< See datasheet
+                      00135 #define RA8875_CURV0            0x48 ;< See datasheet
+                      00136 #define RA8875_CURV1            0x49 ;< See datasheet
+                      00137 
+                      00138 #define RA8875_P1CR             0x8A ;< See datasheet
+                      00139 #define RA8875_P1CR_ENABLE      0x80 ;< See datasheet
+                      00140 #define RA8875_P1CR_DISABLE     0x00 ;< See datasheet
+                      00141 #define RA8875_P1CR_CLKOUT      0x10 ;< See datasheet
+                      00142 #define RA8875_P1CR_PWMOUT      0x00 ;< See datasheet
+                      00143 
+                      00144 #define RA8875_P1DCR            0x8B ;< See datasheet
+                      00145 
+                      00146 #define RA8875_P2CR             0x8C ;< See datasheet
+                      00147 #define RA8875_P2CR_ENABLE      0x80 ;< See datasheet
+                      00148 #define RA8875_P2CR_DISABLE     0x00 ;< See datasheet
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00149 #define RA8875_P2CR_CLKOUT      0x10 ;< See datasheet
+                      00150 #define RA8875_P2CR_PWMOUT      0x00 ;< See datasheet
+                      00151 
+                      00152 #define RA8875_P2DCR            0x8D ;< See datasheet
+                      00153 
+                      00154 #define RA8875_PWM_CLK_DIV1     0x00 ;< See datasheet
+                      00155 #define RA8875_PWM_CLK_DIV2     0x01 ;< See datasheet
+                      00156 #define RA8875_PWM_CLK_DIV4     0x02 ;< See datasheet
+                      00157 #define RA8875_PWM_CLK_DIV8     0x03 ;< See datasheet
+                      00158 #define RA8875_PWM_CLK_DIV16    0x04 ;< See datasheet
+                      00159 #define RA8875_PWM_CLK_DIV32    0x05 ;< See datasheet
+                      00160 #define RA8875_PWM_CLK_DIV64    0x06 ;< See datasheet
+                      00161 #define RA8875_PWM_CLK_DIV128   0x07 ;< See datasheet
+                      00162 #define RA8875_PWM_CLK_DIV256   0x08 ;< See datasheet
+                      00163 #define RA8875_PWM_CLK_DIV512   0x09 ;< See datasheet
+                      00164 #define RA8875_PWM_CLK_DIV1024  0x0A ;< See datasheet
+                      00165 #define RA8875_PWM_CLK_DIV2048  0x0B ;< See datasheet
+                      00166 #define RA8875_PWM_CLK_DIV4096  0x0C ;< See datasheet
+                      00167 #define RA8875_PWM_CLK_DIV8192  0x0D ;< See datasheet
+                      00168 #define RA8875_PWM_CLK_DIV16384 0x0E ;< See datasheet
+                      00169 #define RA8875_PWM_CLK_DIV32768 0x0F ;< See datasheet
+                      00170 
+                      00171 #define RA8875_TPCR0                  0x70 ;< See datasheet
+                      00172 #define RA8875_TPCR0_ENABLE           0x80 ;< See datasheet
+                      00173 #define RA8875_TPCR0_DISABLE          0x00 ;< See datasheet
+                      00174 #define RA8875_TPCR0_WAIT_512CLK      0x00 ;< See datasheet
+                      00175 #define RA8875_TPCR0_WAIT_1024CLK     0x10 ;< See datasheet
+                      00176 #define RA8875_TPCR0_WAIT_2048CLK     0x20 ;< See datasheet
+                      00177 #define RA8875_TPCR0_WAIT_4096CLK     0x30 ;< See datasheet
+                      00178 #define RA8875_TPCR0_WAIT_8192CLK     0x40 ;< See datasheet
+                      00179 #define RA8875_TPCR0_WAIT_16384CLK    0x50 ;< See datasheet
+                      00180 #define RA8875_TPCR0_WAIT_32768CLK    0x60 ;< See datasheet
+                      00181 #define RA8875_TPCR0_WAIT_65536CLK    0x70 ;< See datasheet
+                      00182 #define RA8875_TPCR0_WAKEENABLE       0x08 ;< See datasheet
+                      00183 #define RA8875_TPCR0_WAKEDISABLE      0x00 ;< See datasheet
+                      00184 #define RA8875_TPCR0_ADCCLK_DIV1      0x00 ;< See datasheet
+                      00185 #define RA8875_TPCR0_ADCCLK_DIV2      0x01 ;< See datasheet
+                      00186 #define RA8875_TPCR0_ADCCLK_DIV4      0x02 ;< See datasheet
+                      00187 #define RA8875_TPCR0_ADCCLK_DIV8      0x03 ;< See datasheet
+                      00188 #define RA8875_TPCR0_ADCCLK_DIV16     0x04 ;< See datasheet
+                      00189 #define RA8875_TPCR0_ADCCLK_DIV32     0x05 ;< See datasheet
+                      00190 #define RA8875_TPCR0_ADCCLK_DIV64     0x06 ;< See datasheet
+                      00191 #define RA8875_TPCR0_ADCCLK_DIV128    0x07 ;< See datasheet
+                      00192 
+                      00193 #define RA8875_TPCR1            0x71 ;< See datasheet
+                      00194 #define RA8875_TPCR1_AUTO       0x00 ;< See datasheet
+                      00195 #define RA8875_TPCR1_MANUAL     0x40 ;< See datasheet
+                      00196 #define RA8875_TPCR1_VREFINT    0x00 ;< See datasheet
+                      00197 #define RA8875_TPCR1_VREFEXT    0x20 ;< See datasheet
+                      00198 #define RA8875_TPCR1_DEBOUNCE   0x04 ;< See datasheet
+                      00199 #define RA8875_TPCR1_NODEBOUNCE 0x00 ;< See datasheet
+                      00200 #define RA8875_TPCR1_IDLE       0x00 ;< See datasheet
+                      00201 #define RA8875_TPCR1_WAIT       0x01 ;< See datasheet
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00202 #define RA8875_TPCR1_LATCHX     0x02 ;< See datasheet
+                      00203 #define RA8875_TPCR1_LATCHY     0x03 ;< See datasheet
+                      00204 
+                      00205 #define RA8875_TPXH             0x72 ;< See datasheet
+                      00206 #define RA8875_TPYH             0x73 ;< See datasheet
+                      00207 #define RA8875_TPXYL            0x74 ;< See datasheet
+                      00208 
+                      00209 #define RA8875_INTC1            0xF0 ;< See datasheet
+                      00210 #define RA8875_INTC1_KEY        0x10 ;< See datasheet
+                      00211 #define RA8875_INTC1_DMA        0x08 ;< See datasheet
+                      00212 #define RA8875_INTC1_TP         0x04 ;< See datasheet
+                      00213 #define RA8875_INTC1_BTE        0x02 ;< See datasheet
+                      00214 
+                      00215 #define RA8875_INTC2            0xF1 ;< See datasheet
+                      00216 #define RA8875_INTC2_KEY        0x10 ;< See datasheet
+                      00217 #define RA8875_INTC2_DMA        0x08 ;< See datasheet
+                      00218 #define RA8875_INTC2_TP         0x04 ;< See datasheet
+                      00219 #define RA8875_INTC2_BTE        0x02 ;< See datasheet
+                      00220 
+                      00221 #define RA8875_SCROLL_BOTH      0x00 ;< See datasheet
+                      00222 #define RA8875_SCROLL_LAYER1    0x40 ;< See datasheet
+                      00223 #define RA8875_SCROLL_LAYER2    0x80 ;< See datasheet
+                      00224 #define RA8875_SCROLL_BUFFER    0xC0 ;< See datasheet
+                      00225     
+                      00226 #define  pixclk         (RA8875_PCSR_PDATL | RA8875_PCSR_2CLK);
+                      00227 #define  hsync_start            32;
+                      00228 #define  hsync_pw               96;
+                      00229 #define  hsync_finetune         0;
+                      00230 #define  hsync_nondisp          26;
+                      00231 #define  vsync_pw               2;
+                      00232 #define  vsync_nondisp          32;
+                      00233 #define  vsync_start            23;
+                      00234 #define  _voffset               0;    
+                      00235     
+                      00236 acs0    udata_acs   ; reserve data space in access ram
+000000                00237 input_cmd       res 1
+000001                00238 input_data      res 1
+000002                00239 Delay_cnt_l     res 1   ; reserve 1 byte for variable Delay_cnt_l
+000003                00240 Delay_cnt_h     res 1   ; reserve 1 byte for variable Delay_cnt_h
+000004                00241 Delay_cnt_ms    res 1   ; reserve 1 byte for ms counter
+                      00242 
+                      00243   
+                      00244 Setup   code
+000000                00245 LCD_DisplayOn
+000000 0E01           00246     movlw   RA8875_PWRR
+000002 6E??           00247     movwf   input_cmd
+000004 0E80           00248     movlw   (RA8875_PWRR_NORMAL | RA8875_PWRR_DISPON);;
+000006 6E??           00249     movwf   input_data
+000008 EC?? F???      00250     call    SPI_writeREG
+00000C 0012           00251     return
+                      00252 
+00000E                00253 LCD_GPIOX
+00000E 0EC7           00254     movlw   RA8875_GPIOX
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000010 6E??           00255     movwf   input_cmd
+000012 0E01           00256     movlw   .1
+000014 6E??           00257     movwf   input_data
+000016 EC?? F???      00258     call    SPI_writeREG
+00001A 0012           00259     return
+                      00260     
+00001C                00261 LCD_PWM1config
+00001C 0E8A           00262     movlw   RA8875_P1CR
+00001E 6E??           00263     movwf   input_cmd
+000020 0E8A           00264     movlw   (RA8875_P1CR_ENABLE | (RA8875_PWM_CLK_DIV1024 & 0xF))
+000022 6E??           00265     movwf   input_data
+000024 EC?? F???      00266     call    SPI_writeREG
+000028 0012           00267     return
+                      00268     
+00002A                00269 LCD_PWM1out
+00002A 0E8B           00270     movlw   RA8875_P1DCR
+00002C 6E??           00271     movwf   input_cmd
+00002E 0EFF           00272     movlw   .255
+000030 6E??           00273     movwf   input_data
+000032 EC?? F???      00274     call    SPI_writeREG
+000036 0012           00275     return
+                      00276 
+000038                00277 LCD_FillScreen
+                      00278     ;call    LCD_RectHelper
+                      00279     ;call    LCD_TriHelper
+000038 EC?? F???      00280     call    LCD_LineHelper
+00003C 0012           00281     return
+                      00282     
+00003E                00283 LCD_RectHelper
+                      00284     ;x = 0
+                      00285     ;y = 0
+                      00286     ;w = _width-1
+                      00287     ;h = _height-1
+                      00288 
+                      00289     ;/* Set X */
+00003E 0E91           00290     movlw       0x91
+000040 6E??           00291     movwf       input_cmd
+000042 EC?? F???      00292     call        SPI_writeCMD
+000046 0E00           00293     movlw       .0
+000048 6E??           00294     movwf       input_data
+00004A EC?? F???      00295     call        SPI_writeDATA
+00004E 0E92           00296     movlw       0x92
+000050 6E??           00297     movwf       input_cmd
+000052 EC?? F???      00298     call        SPI_writeCMD
+000056 0E00           00299     movlw       .0
+000058 6E??           00300     movwf       input_data
+00005A EC?? F???      00301     call        SPI_writeDATA
+                      00302 
+                      00303     ;/* Set Y */
+00005E 0E93           00304     movlw       0x93
+000060 6E??           00305     movwf       input_cmd
+000062 EC?? F???      00306     call        SPI_writeCMD
+000066 0E00           00307     movlw       .0
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000068 6E??           00308     movwf       input_data
+00006A EC?? F???      00309     call        SPI_writeDATA
+00006E 0E94           00310     movlw       0x94
+000070 6E??           00311     movwf       input_cmd
+000072 EC?? F???      00312     call        SPI_writeCMD
+000076 0E00           00313     movlw       .0
+000078 6E??           00314     movwf       input_data
+00007A EC?? F???      00315     call        SPI_writeDATA
+                      00316 
+                      00317     ;/* Set X1 */
+00007E 0E95           00318     movlw       0x95
+000080 6E??           00319     movwf       input_cmd
+000082 EC?? F???      00320     call        SPI_writeCMD
+000086 0E1F           00321     movlw       .31;.799 & 0xFF
+000088 6E??           00322     movwf       input_data
+00008A EC?? F???      00323     call        SPI_writeDATA
+00008E 0E96           00324     movlw       0x96
+000090 6E??           00325     movwf       input_cmd
+000092 EC?? F???      00326     call        SPI_writeCMD
+000096 0E03           00327     movlw       .3
+000098 6E??           00328     movwf       input_data
+00009A EC?? F???      00329     call        SPI_writeDATA
+                      00330 
+                      00331     ;/* Set Y1 */
+00009E 0E97           00332     movlw       0x97
+0000A0 6E??           00333     movwf       input_cmd
+0000A2 EC?? F???      00334     call        SPI_writeCMD
+0000A6 0E00           00335     movlw       .0 ;.479 & 0xFF
+0000A8 6E??           00336     movwf       input_data
+0000AA EC?? F???      00337     call        SPI_writeDATA
+0000AE 0E98           00338     movlw       0x98
+0000B0 6E??           00339     movwf       input_cmd
+0000B2 EC?? F???      00340     call        SPI_writeCMD
+0000B6 0E01           00341     movlw       .1
+0000B8 6E??           00342     movwf       input_data
+0000BA EC?? F???      00343     call        SPI_writeDATA
+                      00344 
+                      00345     ;/* Set Color */
+0000BE 0E63           00346     movlw       0x63
+0000C0 6E??           00347     movwf       input_cmd
+0000C2 EC?? F???      00348     call        SPI_writeCMD
+0000C6 0E00           00349     movlw       .0              ;(color & 0xf800) >> 11
+0000C8 6E??           00350     movwf       input_data
+0000CA EC?? F???      00351     call        SPI_writeDATA
+0000CE 0E64           00352     movlw       0x64            
+0000D0 6E??           00353     movwf       input_cmd
+0000D2 EC?? F???      00354     call        SPI_writeCMD
+0000D6 0E00           00355     movlw       .0              ;(color & 0x07e0) >> 5
+0000D8 6E??           00356     movwf       input_data
+0000DA EC?? F???      00357     call        SPI_writeDATA
+0000DE 0E65           00358     movlw       0x65
+0000E0 6E??           00359     movwf       input_cmd
+0000E2 EC?? F???      00360     call        SPI_writeCMD
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0000E6 0E1F           00361     movlw       .31             ;(color & 0x001f)
+0000E8 6E??           00362     movwf       input_data
+0000EA EC?? F???      00363     call        SPI_writeDATA
+                      00364 
+                      00365     ;/* Draw! */
+0000EE 0E90           00366     movlw       RA8875_DCR
+0000F0 6E??           00367     movwf       input_cmd
+0000F2 EC?? F???      00368     call        SPI_writeCMD
+0000F6 0EB0           00369     movlw       0xB0
+0000F8 6E??           00370     movwf       input_data
+0000FA EC?? F???      00371     call        SPI_writeDATA
+                      00372 
+                      00373     ;/* Wait for the command to finish */
+0000FE 0EFF           00374     movlw       .255
+000100 EC?? F???      00375     call        Delay_ms
+000104 0EFF           00376     movlw       .255
+000106 EC?? F???      00377     call        Delay_ms
+00010A 0EFF           00378     movlw       .255
+00010C EC?? F???      00379     call        Delay_ms
+                      00380     ;waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+                      00381 
+000110 0012           00382     return
+000112                00383 LCD_PLLinit
+000112 0E88           00384     movlw   RA8875_PLLC1
+000114 6E??           00385     movwf   input_cmd
+000116 0E00           00386     movlw   RA8875_PLLC1_PLLDIV1
+000118 0F0B           00387     addlw   .11
+00011A 6E??           00388     movwf   input_data
+00011C EC?? F???      00389     call    SPI_writeREG
+000120 0E01           00390     movlw   .1
+000122 EC?? F???      00391     call    Delay_ms
+                      00392    
+000126 0E89           00393     movlw   RA8875_PLLC2
+000128 6E??           00394     movwf   input_cmd
+00012A 0E02           00395     movlw   RA8875_PLLC2_DIV4
+00012C 6E??           00396     movwf   input_data
+00012E EC?? F???      00397     call    SPI_writeREG
+000132 0E01           00398     movlw   .1
+000134 EC?? F???      00399     call    Delay_ms
+                      00400     
+000138 0E10           00401     movlw   RA8875_SYSR
+00013A 6E??           00402     movwf   input_cmd
+00013C 0E0C           00403     movlw   (RA8875_SYSR_16BPP | RA8875_SYSR_MCU8)
+00013E 6E??           00404     movwf   input_data
+000140 EC?? F???      00405     call    SPI_writeREG
+                      00406 
+000144 0E04           00407     movlw   RA8875_PCSR
+000146 6E??           00408     movwf   input_cmd
+000148 0E81           00409     movlw   pixclk
+                      00410 
+00014A 6E??           00411     movwf   input_data
+00014C EC?? F???      00412     call    SPI_writeREG
+000150 0E01           00413     movlw   .1
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000152 EC?? F???      00414     call    Delay_ms
+000156 0012           00415     return
+                      00416 
+                      00417   ; Horizontal settings registers ;
+000158                00418 LCD_Initialisation
+000158 0E14           00419     movlw   RA8875_HDWR
+00015A 6E??           00420     movwf   input_cmd
+00015C 0E63           00421     movlw   .99                                         ;(LCD_width / 8) - 1)
+00015E 6E??           00422     movwf  input_data
+000160 EC?? F???      00423   call    SPI_writeREG
+000164 0E15           00424   movlw   RA8875_HNDFTR
+000166 6E??           00425   movwf   input_cmd
+000168 5000           00426   movf    RA8875_HNDFTR_DE_HIGH, W
+00016A 2400           00427   addwf   hsync_finetune, W
+00016C 6E??           00428   movwf   input_data
+00016E EC?? F???      00429   call    SPI_writeREG
+000172 0E16           00430   movlw   RA8875_HNDR
+000174 6E??           00431   movwf   input_cmd
+000176 0E03           00432   movlw   .3                ;  (hsync_nondisp - hsync_finetune - 2)/8)
+000178 6E??           00433   movwf   input_data
+00017A EC?? F???      00434   call    SPI_writeREG
+00017E 0E17           00435   movlw   RA8875_HSTR
+000180 6E??           00436   movwf   input_cmd
+000182 0E03           00437   movlw   .3;  hsync_start/8 - 1)
+000184 6E??           00438   movwf   input_data
+000186 EC?? F???      00439   call    SPI_writeREG
+00018A 0E18           00440   movlw   RA8875_HPWR
+00018C 6E??           00441   movwf   input_cmd
+00018E 0E0B           00442   movlw   .11;  RA8875_HPWR_LOW + (hsync_pw/8 - 1))
+000190 6E??           00443   movwf   input_data
+000192 EC?? F???      00444   call    SPI_writeREG
+                      00445 
+                      00446   ; Vertical settings registers ;
+000196 0E19           00447   movlw   RA8875_VDHR0
+000198 6E??           00448   movwf   input_cmd
+00019A 0EDF           00449   movlw   .223;(LCD_height - 1 + _voffset) & 0xFF
+00019C 6E??           00450   movwf   input_data
+00019E EC?? F???      00451   call    SPI_writeREG
+0001A2 0E1A           00452   movlw   RA8875_VDHR1
+0001A4 6E??           00453   movwf   input_cmd
+0001A6 0E01           00454   movlw   .1;  (uint16_t)(LCD_height - 1 + _voffset) >> 8);
+0001A8 6E??           00455   movwf   input_data
+0001AA EC?? F???      00456   call    SPI_writeREG
+0001AE 0E1B           00457   movlw   RA8875_VNDR0
+0001B0 6E??           00458   movwf   input_cmd
+0001B2 0E1F           00459   movlw   .31;  vsync_nondisp-1);                          
+0001B4 6E??           00460   movwf   input_data
+0001B6 EC?? F???      00461   call    SPI_writeREG
+0001BA 0E1C           00462   movlw   RA8875_VNDR1
+0001BC 6E??           00463   movwf   input_cmd
+0001BE 0E00           00464   movlw   .0; vsync_nondisp >> 8);
+0001C0 6E??           00465   movwf   input_data
+0001C2 EC?? F???      00466   call    SPI_writeREG
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0001C6 0E1D           00467   movlw   RA8875_VSTR0
+0001C8 6E??           00468   movwf   input_cmd
+0001CA 0E16           00469   movlw   .22;  vsync_start-1);                            ; Vsync start position = VSTR + 1
+0001CC 6E??           00470   movwf   input_data
+0001CE EC?? F???      00471   call    SPI_writeREG
+0001D2 0E1E           00472   movlw   RA8875_VSTR1
+0001D4 6E??           00473   movwf   input_cmd
+0001D6 0E00           00474   movlw   .0;  vsync_start >> 8);
+0001D8 6E??           00475   movwf   input_data
+0001DA EC?? F???      00476   call    SPI_writeREG
+0001DE 0E1F           00477   movlw   RA8875_VPWR
+0001E0 6E??           00478   movwf   input_cmd
+0001E2 0E01           00479   movlw   .1;  RA8875_VPWR_LOW + vsync_pw - 1);            ; Vsync pulse width = VPWR + 1
+0001E4 6E??           00480   movwf   input_data
+0001E6 EC?? F???      00481   call    SPI_writeREG
+                      00482 
+                      00483   ; Set active window X ;
+0001EA 0E30           00484   movlw   RA8875_HSAW0
+0001EC 6E??           00485   movwf   input_cmd
+0001EE 0E00           00486   movlw   .0; ; horizontal start point
+0001F0 6E??           00487   movwf   input_data
+0001F2 EC?? F???      00488   call    SPI_writeREG
+0001F6 0E31           00489   movlw   RA8875_HSAW1
+0001F8 6E??           00490   movwf   input_cmd
+0001FA 0E00           00491   movlw   .0;
+0001FC 6E??           00492   movwf   input_data
+0001FE EC?? F???      00493   call    SPI_writeREG
+000202 0E34           00494   movlw   RA8875_HEAW0
+000204 6E??           00495   movwf   input_cmd
+000206 0E1F           00496   movlw   .31;(LCD_width - 1) & 0xFF);            ; horizontal end point
+000208 6E??           00497   movwf   input_data
+00020A EC?? F???      00498   call    SPI_writeREG
+00020E 0E35           00499   movlw   RA8875_HEAW1
+000210 6E??           00500   movwf   input_cmd
+000212 0E03           00501   movlw   .3;  (uint16_t)(LCD_width - 1) >> 8);
+000214 6E??           00502   movwf   input_data
+000216 EC?? F???      00503   call    SPI_writeREG
+                      00504 
+                      00505   ; Set active window Y ;
+00021A 0E32           00506   movlw   RA8875_VSAW0
+00021C 6E??           00507   movwf   input_cmd
+00021E 0E00           00508   movlw   .0;  0 + _voffset);                              ; vertical start point
+000220 6E??           00509   movwf   input_data
+000222 EC?? F???      00510   call    SPI_writeREG
+000226 0E33           00511   movlw   RA8875_VSAW1
+000228 6E??           00512   movwf   input_cmd
+00022A 0E00           00513   movlw   .0;  0 + _voffset);
+00022C 0E36           00514   movlw   RA8875_VEAW0
+00022E 6E??           00515   movwf   input_cmd
+000230 0EDF           00516   movlw   .223;  (uint16_t)(LCD_height - 1 + _voffset) & 0xFF); ; vertical end point
+000232 6E??           00517   movwf   input_data
+000234 EC?? F???      00518   call    SPI_writeREG
+000238 0E37           00519   movlw   RA8875_VEAW1
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00023A 6E??           00520   movwf   input_cmd
+00023C 0E01           00521   movlw   .1;  (uint16_t)(LCD_height - 1 + _voffset) >> 8);
+00023E 6E??           00522   movwf   input_data
+000240 EC?? F???      00523   call    SPI_writeREG
+                      00524 
+                      00525   ; ToDo: Setup touch panel? ;
+                      00526 
+                      00527   ; Clear the entire window ;
+000244 0E8E           00528   movlw   RA8875_MCLR
+000246 6E??           00529   movwf   input_cmd
+000248 0E80           00530   movlw   (RA8875_MCLR_START | RA8875_MCLR_FULL);;
+00024A 6E??           00531   movwf   input_data
+00024C EC?? F???      00532   call    SPI_writeREG
+000250 0EFF           00533   movlw   .255
+000252 EC?? F???      00534   call    Delay_ms
+000256 0EF5           00535   movlw   .245
+000258 EC?? F???      00536   call    Delay_ms
+00025C 0012           00537   return
+                      00538   
+00025E                00539 LCD_TriHelper   ;200, 15, 250, 100, 150, 125, RA8875_BLACK
+                      00540     ;/* Set X1 */
+00025E 0E91           00541     movlw       0x91
+000260 6E??           00542     movwf       input_cmd
+000262 EC?? F???      00543     call        SPI_writeCMD
+000266 0E00           00544     movlw       .0
+000268 6E??           00545     movwf       input_data
+00026A EC?? F???      00546     call        SPI_writeDATA
+00026E 0E92           00547     movlw       0x92
+000270 6E??           00548     movwf       input_cmd
+000272 EC?? F???      00549     call        SPI_writeCMD
+000276 0E00           00550     movlw       .0
+000278 6E??           00551     movwf       input_data
+00027A EC?? F???      00552     call        SPI_writeDATA
+                      00553     
+                      00554     ;/* Set Y1 */
+00027E 0E93           00555     movlw       0x93
+000280 6E??           00556     movwf       input_cmd
+000282 EC?? F???      00557     call        SPI_writeCMD
+000286 0E00           00558     movlw       .0
+000288 6E??           00559     movwf       input_data
+00028A EC?? F???      00560     call        SPI_writeDATA
+00028E 0E94           00561     movlw       0x94
+000290 6E??           00562     movwf       input_cmd
+000292 EC?? F???      00563     call        SPI_writeCMD
+000296 0E00           00564     movlw       .0
+000298 6E??           00565     movwf       input_data
+00029A EC?? F???      00566     call        SPI_writeDATA
+                      00567 
+                      00568     ;/* Set X2 */
+00029E 0E95           00569     movlw       0x95
+0002A0 6E??           00570     movwf       input_cmd
+0002A2 EC?? F???      00571     call        SPI_writeCMD
+0002A6 0E1F           00572     movlw       .31
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0002A8 6E??           00573     movwf       input_data
+0002AA EC?? F???      00574     call        SPI_writeDATA
+0002AE 0E96           00575     movlw       0x96
+0002B0 6E??           00576     movwf       input_cmd
+0002B2 EC?? F???      00577     call        SPI_writeCMD
+0002B6 0E01           00578     movlw       .1
+0002B8 6E??           00579     movwf       input_data
+0002BA EC?? F???      00580     call        SPI_writeDATA
+                      00581     
+                      00582     ;/* Set Y2 */
+0002BE 0E97           00583     movlw       0x97
+0002C0 6E??           00584     movwf       input_cmd
+0002C2 EC?? F???      00585     call        SPI_writeCMD
+0002C6 0E00           00586     movlw       .0
+0002C8 6E??           00587     movwf       input_data
+0002CA EC?? F???      00588     call        SPI_writeDATA
+0002CE 0E98           00589     movlw       0x98
+0002D0 6E??           00590     movwf       input_cmd
+0002D2 EC?? F???      00591     call        SPI_writeCMD
+0002D6 0E00           00592     movlw       .0
+0002D8 6E??           00593     movwf       input_data
+0002DA EC?? F???      00594     call        SPI_writeDATA
+                      00595 
+                      00596     ;/* Set X3 */
+0002DE 0EA9           00597     movlw       0xA9
+0002E0 6E??           00598     movwf       input_cmd
+0002E2 EC?? F???      00599     call        SPI_writeCMD
+0002E6 0E0A           00600     movlw       .10
+0002E8 6E??           00601     movwf       input_data
+0002EA EC?? F???      00602     call        SPI_writeDATA
+0002EE 0EAA           00603     movlw       0xAA
+0002F0 6E??           00604     movwf       input_cmd
+0002F2 EC?? F???      00605     call        SPI_writeCMD
+0002F6 0E00           00606     movlw       .0
+0002F8 6E??           00607     movwf       input_data
+0002FA EC?? F???      00608     call        SPI_writeDATA
+                      00609     
+                      00610     ;/* Set Y3 */
+0002FE 0EAB           00611     movlw       0xAB
+000300 6E??           00612     movwf       input_cmd
+000302 EC?? F???      00613     call        SPI_writeCMD
+000306 0E0A           00614     movlw       .10
+000308 6E??           00615     movwf       input_data
+00030A EC?? F???      00616     call        SPI_writeDATA
+00030E 0EAC           00617     movlw       0xAC
+000310 6E??           00618     movwf       input_cmd
+000312 EC?? F???      00619     call        SPI_writeCMD
+000316 0E00           00620     movlw       .0
+000318 6E??           00621     movwf       input_data
+00031A EC?? F???      00622     call        SPI_writeDATA
+                      00623     
+                      00624     ;/* Set Color */
+00031E 0E63           00625     movlw       0x63
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000320 6E??           00626     movwf       input_cmd
+000322 EC?? F???      00627     call        SPI_writeCMD
+000326 0E1F           00628     movlw       .31             ;(color & 0xf800) >> 11
+000328 6E??           00629     movwf       input_data
+00032A EC?? F???      00630     call        SPI_writeDATA
+00032E 0E64           00631     movlw       0x64            
+000330 6E??           00632     movwf       input_cmd
+000332 EC?? F???      00633     call        SPI_writeCMD
+000336 0E3F           00634     movlw       .63             ;(color & 0x07e0) >> 5
+000338 6E??           00635     movwf       input_data
+00033A EC?? F???      00636     call        SPI_writeDATA
+00033E 0E65           00637     movlw       0x65
+000340 6E??           00638     movwf       input_cmd
+000342 EC?? F???      00639     call        SPI_writeCMD
+000346 0E1F           00640     movlw       .31             ;(color & 0x001f)
+000348 6E??           00641     movwf       input_data
+00034A EC?? F???      00642     call        SPI_writeDATA
+                      00643 
+                      00644     ;/* Draw! */
+00034E 0E90           00645     movlw       RA8875_DCR
+000350 6E??           00646     movwf       input_cmd
+000352 EC?? F???      00647     call        SPI_writeCMD
+000356 0EA1           00648     movlw       0xA1
+000358 6E??           00649     movwf       input_data
+00035A EC?? F???      00650     call        SPI_writeDATA
+                      00651 
+                      00652     ;/* Wait for the command to finish */
+00035E 0EFF           00653     movlw       .255
+000360 EC?? F???      00654     call        Delay_ms
+000364 0EFF           00655     movlw       .255
+000366 EC?? F???      00656     call        Delay_ms
+00036A 0EFF           00657     movlw       .255
+00036C EC?? F???      00658     call        Delay_ms
+000370 0EFF           00659     movlw       .255
+000372 EC?? F???      00660     call        Delay_ms
+000376 0EFF           00661     movlw       .255
+000378 EC?? F???      00662     call        Delay_ms
+00037C 0EFF           00663     movlw       .255
+00037E EC?? F???      00664     call        Delay_ms
+000382 0EFF           00665     movlw       .255
+000384 EC?? F???      00666     call        Delay_ms
+000388 0EFF           00667     movlw       .255
+00038A EC?? F???      00668     call        Delay_ms
+00038E 0EFF           00669     movlw       .255
+000390 EC?? F???      00670     call        Delay_ms
+000394 0EFF           00671     movlw       .255
+000396 EC?? F???      00672     call        Delay_ms
+00039A 0EFF           00673     movlw       .255
+00039C EC?? F???      00674     call        Delay_ms
+0003A0 0EFF           00675     movlw       .255
+0003A2 EC?? F???      00676     call        Delay_ms
+                      00677     ;waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
+0003A6 0012           00678     return
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00679     
+0003A8                00680 LCD_LineHelper
+                      00681     ;/* Set X1 */
+0003A8 0E91           00682     movlw       0x91
+0003AA 6E??           00683     movwf       input_cmd
+0003AC EC?? F???      00684     call        SPI_writeCMD
+0003B0 0E00           00685     movlw       .0
+0003B2 6E??           00686     movwf       input_data
+0003B4 EC?? F???      00687     call        SPI_writeDATA
+0003B8 0E92           00688     movlw       0x92
+0003BA 6E??           00689     movwf       input_cmd
+0003BC EC?? F???      00690     call        SPI_writeCMD
+0003C0 0E00           00691     movlw       .0
+0003C2 6E??           00692     movwf       input_data
+0003C4 EC?? F???      00693     call        SPI_writeDATA
+                      00694     
+                      00695     ;/* Set Y1 */
+0003C8 0E93           00696     movlw       0x93
+0003CA 6E??           00697     movwf       input_cmd
+0003CC EC?? F???      00698     call        SPI_writeCMD
+0003D0 0E00           00699     movlw       .0
+0003D2 6E??           00700     movwf       input_data
+0003D4 EC?? F???      00701     call        SPI_writeDATA
+0003D8 0E94           00702     movlw       0x94
+0003DA 6E??           00703     movwf       input_cmd
+0003DC EC?? F???      00704     call        SPI_writeCMD
+0003E0 0E01           00705     movlw       .1
+0003E2 6E??           00706     movwf       input_data
+0003E4 EC?? F???      00707     call        SPI_writeDATA
+                      00708 
+                      00709     ;/* Set X2 */
+0003E8 0E95           00710     movlw       0x95
+0003EA 6E??           00711     movwf       input_cmd
+0003EC EC?? F???      00712     call        SPI_writeCMD
+0003F0 0E1F           00713     movlw       .31
+0003F2 6E??           00714     movwf       input_data
+0003F4 EC?? F???      00715     call        SPI_writeDATA
+0003F8 0E96           00716     movlw       0x96
+0003FA 6E??           00717     movwf       input_cmd
+0003FC EC?? F???      00718     call        SPI_writeCMD
+000400 0E03           00719     movlw       .3
+000402 6E??           00720     movwf       input_data
+000404 EC?? F???      00721     call        SPI_writeDATA
+                      00722     
+                      00723     ;/* Set Y2 */
+000408 0E97           00724     movlw       0x97
+00040A 6E??           00725     movwf       input_cmd
+00040C EC?? F???      00726     call        SPI_writeCMD
+000410 0E64           00727     movlw       .100
+000412 6E??           00728     movwf       input_data
+000414 EC?? F???      00729     call        SPI_writeDATA
+000418 0E98           00730     movlw       0x98
+00041A 6E??           00731     movwf       input_cmd
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00041C EC?? F???      00732     call        SPI_writeCMD
+000420 0E01           00733     movlw       .1
+000422 6E??           00734     movwf       input_data
+000424 EC?? F???      00735     call        SPI_writeDATA
+                      00736     
+                      00737     ;/* Set Color */
+000428 0E63           00738     movlw       0x63
+00042A 6E??           00739     movwf       input_cmd
+00042C EC?? F???      00740     call        SPI_writeCMD
+000430 0E1F           00741     movlw       .31             ;(color & 0xf800) >> 11
+000432 6E??           00742     movwf       input_data
+000434 EC?? F???      00743     call        SPI_writeDATA
+000438 0E64           00744     movlw       0x64            
+00043A 6E??           00745     movwf       input_cmd
+00043C EC?? F???      00746     call        SPI_writeCMD
+000440 0E3F           00747     movlw       .63             ;(color & 0x07e0) >> 5
+000442 6E??           00748     movwf       input_data
+000444 EC?? F???      00749     call        SPI_writeDATA
+000448 0E65           00750     movlw       0x65
+00044A 6E??           00751     movwf       input_cmd
+00044C EC?? F???      00752     call        SPI_writeCMD
+000450 0E1F           00753     movlw       .31             ;(color & 0x001f)
+000452 6E??           00754     movwf       input_data
+000454 EC?? F???      00755     call        SPI_writeDATA
+                      00756 
+                      00757     ;/* Draw! */
+000458 0E90           00758     movlw       RA8875_DCR
+00045A 6E??           00759     movwf       input_cmd
+00045C EC?? F???      00760     call        SPI_writeCMD
+000460 0E80           00761     movlw       0x80
+000462 6E??           00762     movwf       input_data
+000464 EC?? F???      00763     call        SPI_writeDATA
+                      00764 
+                      00765     ;/* Wait for the command to finish */
+000468 0EFF           00766     movlw       .255
+00046A EC?? F???      00767     call        Delay_ms
+00046E 0EFF           00768     movlw       .255
+000470 EC?? F???      00769     call        Delay_ms
+000474 0EFF           00770     movlw       .255
+000476 EC?? F???      00771     call        Delay_ms
+00047A 0EFF           00772     movlw       .255
+00047C 0012           00773     return
+                      00774     end
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 16
 
 
 SYMBOL TABLE
@@ -204,7 +932,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  5
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 17
 
 
 SYMBOL TABLE
@@ -263,7 +991,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  6
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 18
 
 
 SYMBOL TABLE
@@ -322,7 +1050,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  7
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 19
 
 
 SYMBOL TABLE
@@ -381,7 +1109,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  8
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 20
 
 
 SYMBOL TABLE
@@ -440,7 +1168,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE  9
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 21
 
 
 SYMBOL TABLE
@@ -499,7 +1227,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 10
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 22
 
 
 SYMBOL TABLE
@@ -558,7 +1286,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 11
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 23
 
 
 SYMBOL TABLE
@@ -601,7 +1329,6 @@ CREF                              00000002
 CREN                              00000004
 CREN1                             00000004
 CREN2                             00000004
-CS                                7
 CSRC                              00000007
 CSRC1                             00000007
 CSRC2                             00000007
@@ -617,13 +1344,13 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 12
+CTMUMD                            00000006
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CTMUMD                            00000006
 CTMUSIDL                          00000005
 CTPLS                             00000000
 CTTRIG                            00000000
@@ -670,21 +1397,19 @@ DT1                               00000007
 DT2                               00000002
 D_A                               00000005
 D_NOT_A                           00000005
-Delay                             0000009E
 Delay_cnt_h                       00000003
 Delay_cnt_l                       00000002
 Delay_cnt_ms                      00000004
-Delay_ms                          0000007C
-Delay_x4us                        0000008A
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 13
+Delay_ms                          00000000
+EBDIS                             00000007
+ECCP1AS                           00000FBF
+ECCP1AS0                          00000004
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-EBDIS                             00000007
-ECCP1AS                           00000FBF
-ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
@@ -735,15 +1460,15 @@ FSR0                              00000000
 FSR0H                             00000FEA
 FSR0L                             00000FE9
 FSR1                              00000001
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 14
+FSR1H                             00000FE2
+FSR1L                             00000FE1
+FSR2                              00000002
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-FSR1H                             00000FE2
-FSR1L                             00000FE1
-FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
@@ -794,15 +1519,15 @@ INT2F                             00000001
 INT2IE                            00000004
 INT2IF                            00000001
 INT2IP                            00000007
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 15
+INT2P                             00000007
+INT3                              00000003
+INT3E                             00000005
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-INT2P                             00000007
-INT3                              00000003
-INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
@@ -853,15 +1578,15 @@ LATB0                             00000000
 LATB1                             00000001
 LATB2                             00000002
 LATB3                             00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 16
+LATB4                             00000004
+LATB5                             00000005
+LATB6                             00000006
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATB4                             00000004
-LATB5                             00000005
-LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
@@ -912,15 +1637,15 @@ LATH3                             00000003
 LATH4                             00000004
 LATH5                             00000005
 LATH6                             00000006
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 17
+LATH7                             00000007
+LATJ                              00000F91
+LATJ0                             00000000
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATH7                             00000007
-LATJ                              00000F91
-LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
@@ -930,21 +1655,23 @@ LATJ6                             00000006
 LATJ7                             00000007
 LB                                00000006
 LCD_DisplayOn                     00000000
-LCD_FillScreen                    00000000
-LCD_GPIOX                         00000000
-LCD_Initialisation                00000000
-LCD_PLLinit                       00000000
-LCD_PWM1config                    00000000
-LCD_PWM1out                       00000000
-LCD_begin                         00000000
+LCD_FillScreen                    00000038
+LCD_GPIOX                         0000000E
+LCD_Initialisation                00000158
+LCD_LineHelper                    000003A8
+LCD_PLLinit                       00000112
+LCD_PWM1config                    0000001C
+LCD_PWM1out                       0000002A
+LCD_RectHelper                    0000003E
+LCD_TriHelper                     0000025E
+LCD_height                        480
+LCD_width                         800
 LVDIE                             00000002
 LVDIF                             00000002
 LVDIP                             00000002
 MEMCON                            00000F26
 MFIOFS                            00000001
 MFIOSEL                           00000000
-MISO                              5
-MOSI                              4
 MSK0                              00000000
 MSK1                              00000001
 MSK2                              00000002
@@ -971,13 +1698,13 @@ NOT_T1DONE                        00000003
 NOT_T1SYNC                        00000002
 NOT_T3DONE                        00000003
 NOT_T3SYNC                        00000002
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 18
+NOT_T5DONE                        00000003
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-NOT_T5DONE                        00000003
 NOT_T5SYNC                        00000002
 NOT_T7DONE                        00000003
 NOT_T7SYNC                        00000002
@@ -1030,13 +1757,13 @@ P2DC3                             00000003
 P2DC4                             00000004
 P2DC5                             00000005
 P2DC6                             00000006
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 19
+P2M0                              00000006
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-P2M0                              00000006
 P2M1                              00000007
 P2RSEN                            00000007
 P3B                               00000004
@@ -1089,13 +1816,13 @@ PLUSW2                            00000FDB
 PMD0                              00000F19
 PMD1                              00000F18
 PMD2                              00000F17
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 20
+PMD3                              00000F16
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-PMD3                              00000F16
 POR                               00000001
 PORTA                             00000F80
 PORTB                             00000F81
@@ -1148,13 +1875,13 @@ PSS2AC1                           00000003
 PSS2BD0                           00000000
 PSS2BD1                           00000001
 PSS3AC0                           00000002
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 21
+PSS3AC1                           00000003
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-PSS3AC1                           00000003
 PSS3BD0                           00000000
 PSS3BD1                           00000001
 PSTR1CON                          00000F9C
@@ -1171,10 +1898,206 @@ RA4                               00000004
 RA5                               00000005
 RA6                               00000006
 RA7                               00000007
+RA8875_BLACK                      0x0000
+RA8875_BLUE                       0x001F
+RA8875_BTCR                       0x44
 RA8875_CMDREAD                    0xC0
 RA8875_CMDWRITE                   0x80
+RA8875_CURH0                      0x46
+RA8875_CURH1                      0x47
+RA8875_CURV0                      0x48
+RA8875_CURV1                      0x49
+RA8875_CYAN                       0x07FF
 RA8875_DATAREAD                   0x40
 RA8875_DATAWRITE                  0x00
+RA8875_DCR                        0x90
+RA8875_DCR_CIRCLE_START           0x40
+RA8875_DCR_CIRCLE_STATUS          0x40
+RA8875_DCR_CIRCLE_STOP            0x00
+RA8875_DCR_DRAWLINE               0x00
+RA8875_DCR_DRAWSQUARE             0x10
+RA8875_DCR_DRAWTRIANGLE           0x01
+RA8875_DCR_FILL                   0x20
+RA8875_DCR_LINESQUTRI_START       0x80
+RA8875_DCR_LINESQUTRI_STATUS      0x80
+RA8875_DCR_LINESQUTRI_STOP        0x00
+RA8875_DCR_NOFILL                 0x00
+RA8875_ELLIPSE                    0xA0
+RA8875_ELLIPSE_STATUS             0x80
+RA8875_GPIOX                      0xC7
+RA8875_GREEN                      0x07E0
+RA8875_HDWR                       0x14
+RA8875_HEAW0                      0x34
+RA8875_HEAW1                      0x35
+RA8875_HNDFTR                     0x15
+RA8875_HNDFTR_DE_HIGH             0x00
+RA8875_HNDFTR_DE_LOW              0x80
+RA8875_HNDR                       0x16
+RA8875_HPWR                       0x18
+RA8875_HPWR_HIGH                  0x80
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 34
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RA8875_HPWR_LOW                   0x00
+RA8875_HSAW0                      0x30
+RA8875_HSAW1                      0x31
+RA8875_HSTR                       0x17
+RA8875_INTC1                      0xF0
+RA8875_INTC1_BTE                  0x02
+RA8875_INTC1_DMA                  0x08
+RA8875_INTC1_KEY                  0x10
+RA8875_INTC1_TP                   0x04
+RA8875_INTC2                      0xF1
+RA8875_INTC2_BTE                  0x02
+RA8875_INTC2_DMA                  0x08
+RA8875_INTC2_KEY                  0x10
+RA8875_INTC2_TP                   0x04
+RA8875_MAGENTA                    0xF81F
+RA8875_MCLR                       0x8E
+RA8875_MCLR_ACTIVE                0x40
+RA8875_MCLR_FULL                  0x00
+RA8875_MCLR_READSTATUS            0x80
+RA8875_MCLR_START                 0x80
+RA8875_MCLR_STOP                  0x00
+RA8875_MRWC                       0x02
+RA8875_MWCR0                      0x40
+RA8875_MWCR0_BLINK                0x20
+RA8875_MWCR0_CURSOR               0x40
+RA8875_MWCR0_DIRMASK              0x0C
+RA8875_MWCR0_DTLR                 0x0C
+RA8875_MWCR0_GFXMODE              0x00
+RA8875_MWCR0_LRTD                 0x00
+RA8875_MWCR0_RLTD                 0x04
+RA8875_MWCR0_TDLR                 0x08
+RA8875_MWCR0_TXTMODE              0x80
+RA8875_P1CR                       0x8A
+RA8875_P1CR_CLKOUT                0x10
+RA8875_P1CR_DISABLE               0x00
+RA8875_P1CR_ENABLE                0x80
+RA8875_P1CR_PWMOUT                0x00
+RA8875_P1DCR                      0x8B
+RA8875_P2CR                       0x8C
+RA8875_P2CR_CLKOUT                0x10
+RA8875_P2CR_DISABLE               0x00
+RA8875_P2CR_ENABLE                0x80
+RA8875_P2CR_PWMOUT                0x00
+RA8875_P2DCR                      0x8D
+RA8875_PCSR                       0x04
+RA8875_PCSR_2CLK                  0x01
+RA8875_PCSR_4CLK                  0x02
+RA8875_PCSR_8CLK                  0x03
+RA8875_PCSR_CLK                   0x00
+RA8875_PCSR_PDATL                 0x80
+RA8875_PCSR_PDATR                 0x00
+RA8875_PLLC1                      0x88
+RA8875_PLLC1_PLLDIV1              0x00
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RA8875_PLLC1_PLLDIV2              0x80
+RA8875_PLLC2                      0x89
+RA8875_PLLC2_DIV1                 0x00
+RA8875_PLLC2_DIV128               0x07
+RA8875_PLLC2_DIV16                0x04
+RA8875_PLLC2_DIV2                 0x01
+RA8875_PLLC2_DIV32                0x05
+RA8875_PLLC2_DIV4                 0x02
+RA8875_PLLC2_DIV64                0x06
+RA8875_PLLC2_DIV8                 0x03
+RA8875_PWM_CLK_DIV1               0x00
+RA8875_PWM_CLK_DIV1024            0x0A
+RA8875_PWM_CLK_DIV128             0x07
+RA8875_PWM_CLK_DIV16              0x04
+RA8875_PWM_CLK_DIV16384           0x0E
+RA8875_PWM_CLK_DIV2               0x01
+RA8875_PWM_CLK_DIV2048            0x0B
+RA8875_PWM_CLK_DIV256             0x08
+RA8875_PWM_CLK_DIV32              0x05
+RA8875_PWM_CLK_DIV32768           0x0F
+RA8875_PWM_CLK_DIV4               0x02
+RA8875_PWM_CLK_DIV4096            0x0C
+RA8875_PWM_CLK_DIV512             0x09
+RA8875_PWM_CLK_DIV64              0x06
+RA8875_PWM_CLK_DIV8               0x03
+RA8875_PWM_CLK_DIV8192            0x0D
+RA8875_PWRR                       0x01
+RA8875_PWRR_DISPOFF               0x00
+RA8875_PWRR_DISPON                0x80
+RA8875_PWRR_NORMAL                0x00
+RA8875_PWRR_SLEEP                 0x02
+RA8875_PWRR_SOFTRESET             0x01
+RA8875_RED                        0xF800
+RA8875_SCROLL_BOTH                0x00
+RA8875_SCROLL_BUFFER              0xC0
+RA8875_SCROLL_LAYER1              0x40
+RA8875_SCROLL_LAYER2              0x80
+RA8875_SYSR                       0x10
+RA8875_SYSR_16BPP                 0x0C
+RA8875_SYSR_8BPP                  0x00
+RA8875_SYSR_MCU16                 0x03
+RA8875_SYSR_MCU8                  0x00
+RA8875_TPCR0                      0x70
+RA8875_TPCR0_ADCCLK_DIV1          0x00
+RA8875_TPCR0_ADCCLK_DIV128        0x07
+RA8875_TPCR0_ADCCLK_DIV16         0x04
+RA8875_TPCR0_ADCCLK_DIV2          0x01
+RA8875_TPCR0_ADCCLK_DIV32         0x05
+RA8875_TPCR0_ADCCLK_DIV4          0x02
+RA8875_TPCR0_ADCCLK_DIV64         0x06
+RA8875_TPCR0_ADCCLK_DIV8          0x03
+RA8875_TPCR0_DISABLE              0x00
+RA8875_TPCR0_ENABLE               0x80
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 36
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RA8875_TPCR0_WAIT_1024CLK         0x10
+RA8875_TPCR0_WAIT_16384CLK        0x50
+RA8875_TPCR0_WAIT_2048CLK         0x20
+RA8875_TPCR0_WAIT_32768CLK        0x60
+RA8875_TPCR0_WAIT_4096CLK         0x30
+RA8875_TPCR0_WAIT_512CLK          0x00
+RA8875_TPCR0_WAIT_65536CLK        0x70
+RA8875_TPCR0_WAIT_8192CLK         0x40
+RA8875_TPCR0_WAKEDISABLE          0x00
+RA8875_TPCR0_WAKEENABLE           0x08
+RA8875_TPCR1                      0x71
+RA8875_TPCR1_AUTO                 0x00
+RA8875_TPCR1_DEBOUNCE             0x04
+RA8875_TPCR1_IDLE                 0x00
+RA8875_TPCR1_LATCHX               0x02
+RA8875_TPCR1_LATCHY               0x03
+RA8875_TPCR1_MANUAL               0x40
+RA8875_TPCR1_NODEBOUNCE           0x00
+RA8875_TPCR1_VREFEXT              0x20
+RA8875_TPCR1_VREFINT              0x00
+RA8875_TPCR1_WAIT                 0x01
+RA8875_TPXH                       0x72
+RA8875_TPXYL                      0x74
+RA8875_TPYH                       0x73
+RA8875_VDHR0                      0x19
+RA8875_VDHR1                      0x1A
+RA8875_VEAW0                      0x36
+RA8875_VEAW1                      0x37
+RA8875_VNDR0                      0x1B
+RA8875_VNDR1                      0x1C
+RA8875_VPWR                       0x1F
+RA8875_VPWR_HIGH                  0x80
+RA8875_VPWR_LOW                   0x00
+RA8875_VSAW0                      0x32
+RA8875_VSAW1                      0x33
+RA8875_VSTR0                      0x1D
+RA8875_VSTR1                      0x1E
+RA8875_WHITE                      0xFFFF
+RA8875_YELLOW                     0xFFE0
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1189,6 +2112,12 @@ RBIP                              00000000
 RBPU                              00000007
 RC0                               00000000
 RC1                               00000001
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RC1IE                             00000005
 RC1IF                             00000005
 RC1IP                             00000005
@@ -1207,12 +2136,6 @@ RCD8                              00000000
 RCEN                              00000003
 RCIDL                             00000006
 RCIE                              00000005
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 22
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RCIF                              00000005
 RCIP                              00000005
 RCON                              00000FD0
@@ -1248,6 +2171,12 @@ REGSLP                            00000007
 REPU                              00000006
 RF1                               00000001
 RF2                               00000002
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RF3                               00000003
 RF4                               00000004
 RF5                               00000005
@@ -1266,12 +2195,6 @@ RH3                               00000003
 RH4                               00000004
 RH5                               00000005
 RH6                               00000006
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 23
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RH7                               00000007
 RI                                00000004
 RJ0                               00000000
@@ -1291,7 +2214,6 @@ ROON                              00000007
 ROSEL                             00000004
 ROSSLP                            00000005
 RSEN                              00000001
-RST                               0
 RTCC                              00000004
 RTCCAL                            00000F5E
 RTCCFG                            00000F5F
@@ -1308,6 +2230,12 @@ RTCVAL                            00000F5C
 RTCVALH                           00000F5D
 RTCVALL                           00000F5C
 RTCWREN                           00000005
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 39
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RTSECSEL0                         00000001
 RTSECSEL1                         00000002
 RX1                               00000007
@@ -1323,14 +2251,7 @@ R_NOT_W                           00000002
 R_W                               00000002
 S                                 00000003
 SBOREN                            00000006
-SCK                               6
 SCK1                              00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 24
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SCK2                              00000006
 SCKLI                             00000000
 SCL1                              00000003
@@ -1368,11 +2289,15 @@ SPEN1                             00000007
 SPEN2                             00000007
 SPI1OD                            00000007
 SPI2OD                            00000000
-SPI_MasterInit                    0000006A
-SPI_MasterTransmit                00000072
-SPI_writeCMD                      00000046
-SPI_writeDATA                     00000058
-SPI_writeREG                      0000003C
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 40
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+SPI_writeCMD                      00000000
+SPI_writeDATA                     00000000
+SPI_writeREG                      00000000
 SREN                              00000005
 SREN1                             00000005
 SREN2                             00000005
@@ -1384,12 +2309,6 @@ SSP1CON1                          00000FC6
 SSP1CON2                          00000FC5
 SSP1IE                            00000003
 SSP1IF                            00000003
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 25
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SSP1IP                            00000003
 SSP1MD                            00000001
 SSP1MSK                           00000FC8
@@ -1429,6 +2348,12 @@ STRC                              00000002
 STRD                              00000003
 STRSYNC                           00000004
 SWDTE                             00000000
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 41
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SWDTEN                            00000000
 SYNC                              00000004
 SYNC1                             00000004
@@ -1443,12 +2368,6 @@ T0IP                              00000002
 T0PS0                             00000000
 T0PS1                             00000001
 T0PS2                             00000002
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 26
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T0SE                              00000004
 T10CKPS0                          00000000
 T10CKPS1                          00000001
@@ -1488,6 +2407,12 @@ T2OUTPS3                          00000006
 T3CKI                             00000005
 T3CKPS0                           00000004
 T3CKPS1                           00000005
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 42
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T3CON                             00000FB1
 T3G                               00000005
 T3GCON                            00000FB0
@@ -1502,12 +2427,6 @@ T3GVAL                            00000002
 T4CKPS0                           00000000
 T4CKPS1                           00000001
 T4CON                             00000F6B
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 27
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T4OUTPS0                          00000003
 T4OUTPS1                          00000004
 T4OUTPS2                          00000005
@@ -1547,6 +2466,12 @@ T7GSS0                            00000000
 T7GSS1                            00000001
 T7GTM                             00000005
 T7GVAL                            00000002
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 43
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T8CKPS0                           00000000
 T8CKPS1                           00000001
 T8CON                             00000F36
@@ -1561,12 +2486,6 @@ TBLPTRL                           00000FF6
 TBLPTRU                           00000FF8
 TGEN                              00000004
 TMR0                              00000FD6
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 28
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TMR0H                             00000FD7
 TMR0IE                            00000005
 TMR0IF                            00000002
@@ -1606,6 +2525,12 @@ TMR2IP                            00000001
 TMR2MD                            00000002
 TMR2ON                            00000002
 TMR3                              00000FB2
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 44
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TMR3CS0                           00000006
 TMR3CS1                           00000007
 TMR3GE                            00000007
@@ -1620,12 +2545,6 @@ TMR3L                             00000FB2
 TMR3MD                            00000003
 TMR3ON                            00000000
 TMR4                              00000F6D
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 29
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TMR4IE                            00000000
 TMR4IF                            00000000
 TMR4IP                            00000000
@@ -1665,6 +2584,12 @@ TMR7IP                            00000003
 TMR7L                             00000F3E
 TMR7MD                            00000005
 TMR7ON                            00000000
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 45
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TMR8                              00000F38
 TMR8IE                            00000004
 TMR8IF                            00000004
@@ -1679,12 +2604,6 @@ TOSU                              00000FFF
 TRIGSEL0                          00000006
 TRIGSEL1                          00000007
 TRISA                             00000F92
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 30
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TRISA0                            00000000
 TRISA1                            00000001
 TRISA2                            00000002
@@ -1724,6 +2643,12 @@ TRISE                             00000F96
 TRISE0                            00000000
 TRISE1                            00000001
 TRISE2                            00000002
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 46
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TRISE3                            00000003
 TRISE4                            00000004
 TRISE5                            00000005
@@ -1738,12 +2663,6 @@ TRISF5                            00000005
 TRISF6                            00000006
 TRISF7                            00000007
 TRISG                             00000F98
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 31
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TRISG0                            00000000
 TRISG1                            00000001
 TRISG2                            00000002
@@ -1783,6 +2702,12 @@ TX1IP                             00000004
 TX2                               00000001
 TX2IE                             00000004
 TX2IF                             00000004
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 47
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TX2IP                             00000004
 TX8_9                             00000006
 TX9                               00000006
@@ -1797,12 +2722,6 @@ TXEN                              00000005
 TXEN1                             00000005
 TXEN2                             00000005
 TXIE                              00000004
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 32
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TXIF                              00000004
 TXIP                              00000004
 TXREG                             00000FAD
@@ -1841,8 +2760,13 @@ WRERR                             00000003
 WRH                               00000003
 WRL                               00000002
 WUE                               00000001
-Wait_Transmit                     00000074
 Z                                 00000002
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 48
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _ABW_MM_3L                        000000FF
 _ABW_XM12_3L                      000000EF
 _ABW_XM16_3L                      000000DF
@@ -1856,12 +2780,6 @@ _BOREN_SBORDIS_2L                 000000FF
 _BORPWR_HIGH_2L                   000000DF
 _BORPWR_LOW_2L                    0000009F
 _BORPWR_MEDIUM_2L                 000000BF
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 33
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _BORPWR_ZPBORMV_2L                000000FF
 _BORV_0_2L                        000000E7
 _BORV_1_2L                        000000EF
@@ -1902,6 +2820,12 @@ _CP7_OFF_5L                       000000FF
 _CP7_ON_5L                        0000007F
 _CPB_OFF_5H                       000000FF
 _CPB_ON_5H                        000000BF
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 49
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _CPD_OFF_5H                       000000FF
 _CPD_ON_5H                        0000007F
 _DEBUG_OFF_4L                     000000FF
@@ -1915,12 +2839,6 @@ _EBRT0_ON_7L                      000000FE
 _EBRT1_OFF_7L                     000000FF
 _EBRT1_ON_7L                      000000FD
 _EBRT2_OFF_7L                     000000FF
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 34
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _EBRT2_ON_7L                      000000FB
 _EBRT3_OFF_7L                     000000FF
 _EBRT3_ON_7L                      000000F7
@@ -1961,6 +2879,12 @@ _IDLOC5                           00200005
 _IDLOC6                           00200006
 _IDLOC7                           00200007
 _IESO_OFF_1H                      0000007F
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 50
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _IESO_ON_1H                       000000FF
 _INTOSCSEL_HIGH_1L                000000FF
 _INTOSCSEL_LOW_1L                 000000FB
@@ -1974,12 +2898,6 @@ _PWRTEN_OFF_2L                    000000FF
 _PWRTEN_ON_2L                     000000FE
 _RETEN_OFF_1L                     000000FE
 _RETEN_ON_1L                      000000FF
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 35
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _RTCOSC_INTOSCREF_3L              000000FE
 _RTCOSC_SOSCREF_3L                000000FF
 _SOSCSEL_DIG_1L                   000000F7
@@ -2020,6 +2938,12 @@ _WRT1_OFF_6L                      000000FF
 _WRT1_ON_6L                       000000FD
 _WRT2_OFF_6L                      000000FF
 _WRT2_ON_6L                       000000FB
+MPASM 5.81                           LCD.ASM   11-8-2019  15:59:26         PAGE 51
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _WRT3_OFF_6L                      000000FF
 _WRT3_ON_6L                       000000F7
 _WRT4_OFF_6L                      000000FF
@@ -2033,25 +2957,23 @@ _WRT7_ON_6L                       0000007F
 _WRTB_OFF_6H                      000000FF
 _WRTB_ON_6H                       000000BF
 _WRTC_OFF_6H                      000000FF
-MPASM 5.81                          MAIN.ASM   11-7-2019  14:56:53         PAGE 36
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _WRTC_ON_6H                       000000DF
 _WRTD_OFF_6H                      000000FF
 _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-__DEBUG                           
-__MPLAB_DEBUGGER_ICD3             1
-_main_0018                        00000018
+_voffset                          0
+hsync_finetune                    0
+hsync_nondisp                     26
+hsync_pw                          96
+hsync_start                       32
 input_cmd                         00000000
 input_data                        00000001
-lp1                               000000A0
-lp2                               0000007E
+pixclk                            (RA8875_PCSR_PDATL | RA8875_PCSR_2CLK)
+vsync_nondisp                     32
+vsync_pw                          2
+vsync_start                       23
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
