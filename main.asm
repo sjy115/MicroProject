@@ -1,7 +1,7 @@
     #include p18f87k22.inc
 
-    global Delay_ms, SPI_writeREG, SPI_writeCMD, SPI_writeDATA
-    extern LCD_PLLinit, LCD_Initialisation,LCD_PLLinit,LCD_Initialisation,LCD_DisplayOn,LCD_GPIOX,LCD_PWM1config,LCD_FillScreen,LCD_PWM1out, input_cmd, input_data
+    global Delay_ms, SPI_writeREG, Scroll_d1, Scroll_d2
+    extern LCD_Initialisation, LCD_FillScreen, input_cmd, input_data, LCD_ScrollX
 
 #define	RST		0
 #define	MOSI		4
@@ -17,12 +17,13 @@
 #define RA8875_CMDREAD          0xC0
 
 acs0    udata_acs   ; reserve data space in access ram
-;input_cmd	res 1
-;input_data	res 1
 Delay_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Delay_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
 Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
-  
+Scroll_speed	res 1
+Scroll_d1	res 1
+Scroll_d2	res 1
+	
 main    code	0
     
 LCD_begin
@@ -44,17 +45,32 @@ LCD_begin
     call    SPI_MasterInit
 
     
-    call    LCD_PLLinit
     call    LCD_Initialisation
-    call    LCD_DisplayOn
-    call    LCD_GPIOX ;// Enable TFT - display enable tied to GPIOX
-    call    LCD_PWM1config; // PWM output for backlight
-    call    LCD_PWM1out;
     
     ;// With hardware accelleration this is instant
     call    LCD_FillScreen
+    call    Scroll
+
     
-    goto    $
+    
+    
+    goto $
+Scroll
+    movlw   0x40
+    movwf   Scroll_d1
+    movlw   0x6
+    movwf   Scroll_d2
+    movlw   0x00		; W=0	
+scrl
+    call    LCD_ScrollX
+    movlw   .5
+    call    Delay_ms
+    decf    Scroll_d1, F	; borrow when 0x00 -> 0xff
+    subwfb  Scroll_d2, F	; no carry when 0x00 -> 0xff
+    bc	    scrl
+    return
+    
+
 SPI_writeREG
     call    SPI_writeCMD
     call    SPI_writeDATA
