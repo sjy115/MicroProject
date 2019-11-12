@@ -1,7 +1,7 @@
     #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, LCD_ScrollX, Box, New_Box
-    extern Delay_ms, SPI_writeREG, Scroll_d1, Scroll_d2
+    global LCD_Initialisation, input_cmd, input_data, LCD_ScrollX, New_Box
+    extern Delay_ms, SPI_writeREG
    
 #define	LCD_width		800
 #define	LCD_height		480
@@ -233,49 +233,23 @@
 #define  vsync_start		.23;
 #define  _voffset		.0;    
 
-#define	box_xstart		.40
-#define	box_ystart		.60
-#define	box_xend		.200
-#define	box_yend		.220
+#define	box_xstart		.10
+#define	box_ystart		.20
+#define	box_xend		.90
+#define	box_yend		.30
     
-#define	box_xoffset		.240
-#define	box_yoffset		.200
+#define	box_xoffset		.100
+#define	box_yoffset		.50
 
-#define	tri_left_1x		.50
-#define	tri_left_1y		.80
-#define	tri_left_2x		.190
-#define	tri_left_2y		.80
-#define	tri_left_3x		.120
-#define	tri_left_3y		.210
+#define	Box_x1	    0
+#define	Box_x2	    1
+#define	Box_x3	    2
+#define	Box_y1	    3
+#define	Box_y2	    4
+#define	Box_y3	    5
+#define	Box_layer   6
+#define	Box_colour  7
     
-#define	tri_down_1x		.60
-#define	tri_down_1y		.210
-#define	tri_down_2x		.60
-#define	tri_down_2y		.70
-#define	tri_down_3x		.185
-#define	tri_down_3y		.140
-    
-#define	tri_right_1x		.190
-#define	tri_right_1y		.200
-#define	tri_right_2x		.50
-#define	tri_right_2y		.200
-#define	tri_right_3x		.120
-#define	tri_right_3y		.75
-    
-#define	tri_up_1x		.180
-#define	tri_up_1y		.70
-#define	tri_up_2x		.180
-#define	tri_up_2y		.210
-#define	tri_up_3x		.55
-#define	tri_up_3y		.140
-
-#define	Box_pos1	0
-#define	Box_pos2	1
-#define	Box_pos3	2
-#define	Box_halfbeat	3
-#define	Box_dir1	4
-#define	Box_dir2	5
-#define	Box_enable	6
 
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	    res 1
@@ -284,95 +258,28 @@ Delay_cnt_l	    res 1   ; reserve 1 byte for variable Delay_cnt_l
 Delay_cnt_h	    res 1   ; reserve 1 byte for variable Delay_cnt_h
 Delay_cnt_ms	    res 1   ; reserve 1 byte for ms counter
 Box		    res 1
+rect_x1_h	    res 1
+rect_y1_h	    res 1
+rect_x2_h	    res 1
+rect_y2_h	    res 1
+rect_x1_l	    res 1
+rect_y1_l	    res 1
+rect_x2_l	    res 1
+rect_y2_l	    res 1
+rect_colour	    res 1
 		    
-input1		    res 1
-input2		    res 1
-input3		    res 1
-input4		    res 1		    
-input5		    res 1	
-input6		    res 1
-dir		    res 1
+		    
 Setup	code
 
-New_Box    ;takes Box as input
-    btfss   Box, Box_enable
-    return
-    call    LCD_RectHelper
-    btfss   Box, Box_dir1
-    bra	    zero_or_two
-    bra	    one_or_three
-zero_or_two
-    btfss   Box, Box_dir2	    
-    bra	    Tri_left	    	    ;zero
-    bra	    Tri_right		    ;two
-one_or_three
-    btfss   Box, Box_dir2
-    bra	    Tri_down	    	    ;one
-    bra	    Tri_up		    ;three
-    
-Tri_left
-    movlw   tri_left_1x 
-    movwf   input1
-    movlw   tri_left_1y 
-    movwf   input2
-    movlw   tri_left_2x 
-    movwf   input3
-    movlw   tri_left_2y 
-    movwf   input4
-    movlw   tri_left_3x 
-    movwf   input5
-    movlw   tri_left_3y 
-    movwf   input6
-    call    LCD_TriHelper
-    return
+NewBox
+    movwf   Box
+    btfss   Box, Box_layer
+    bra	    LYEN1			;layer 1
+    bra	    LYEN2			;layer 2
 
-Tri_down
-    movlw   tri_down_1x 
-    movwf   input1
-    movlw   tri_down_1y 
-    movwf   input2
-    movlw   tri_down_2x 
-    movwf   input3
-    movlw   tri_down_2y 
-    movwf   input4
-    movlw   tri_down_3x 
-    movwf   input5
-    movlw   tri_down_3y 
-    movwf   input6
-    call    LCD_TriHelper
-    return
- 
-Tri_right
-    movlw   tri_right_1x 
-    movwf   input1
-    movlw   tri_right_1y 
-    movwf   input2
-    movlw   tri_right_2x 
-    movwf   input3
-    movlw   tri_right_2y 
-    movwf   input4
-    movlw   tri_right_3x 
-    movwf   input5
-    movlw   tri_right_3y 
-    movwf   input6
-    call    LCD_TriHelper
-    return
+    btfss   Box, Box_colour
     
-Tri_up
-    movlw   tri_up_1x 
-    movwf   input1
-    movlw   tri_up_1y 
-    movwf   input2
-    movlw   tri_up_2x 
-    movwf   input3
-    movlw   tri_up_2y 
-    movwf   input4
-    movlw   tri_up_3x 
-    movwf   input5
-    movlw   tri_up_3y 
-    movwf   input6
-    call    LCD_TriHelper
-    return
+
 
 LYEN1
     movlw   0x41
@@ -416,8 +323,6 @@ LCD_RectHelper
     movlw   0x93
     movwf   input_cmd
     movlw   box_ystart
-    btfsc   Box, Box_pos3
-    addlw   box_yoffset
     movwf   input_data
     call    SPI_writeREG
     movlw   0x94
@@ -449,8 +354,6 @@ LCD_RectHelper
     movlw   0x97
     movwf   input_cmd
     movlw   box_yend
-    btfsc   Box, Box_pos3
-    addlw   box_yoffset
     movwf   input_data
     call    SPI_writeREG
     movlw   0x98
@@ -515,135 +418,6 @@ LCD_RectHelper
     ;waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
     return
     
-LCD_TriHelper
-    ;/* Set X1 */
-    movlw   0x91
-    movwf   input_cmd
-    movlw   b'11'	    
-    andwf   Box, W	    
-    mullw   box_xoffset
-    movf    input1, W
-    addwf   PRODL, W
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x92
-    movwf   input_cmd
-    movlw   .0
-    addwfc  PRODH, W
-    movwf   input_data
-    call    SPI_writeREG
-    
-    ;/* Set Y1 */
-    movlw   0x93
-    movwf   input_cmd
-    movf    input2,W
-    btfsc   Box, Box_pos3
-    addlw   box_yoffset
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x94
-    movwf   input_cmd
-    movlw   .0
-    btfsc   Box, Box_pos3
-    addlw   .1
-    movwf   input_data
-    call    SPI_writeREG
-
-    ;/* Set X2 */
-    movlw   0x95
-    movwf   input_cmd
-    movlw   b'11'
-    andwf   Box, W
-    mullw   box_xoffset
-    movf    input3, W
-    addwf   PRODL, W
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x96
-    movwf   input_cmd
-    movlw   .0
-    addwfc  PRODH, W
-    movwf   input_data
-    call    SPI_writeREG
-    
-    ;/* Set Y2 */
-    movlw   0x97
-    movwf   input_cmd
-    movf    input4, W
-    btfsc   Box, Box_pos3
-    addlw   box_yoffset
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x98
-    movwf   input_cmd
-    movlw   .0
-    btfsc   Box, Box_pos3
-    addlw   .1
-    movwf   input_data
-    call    SPI_writeREG
-
-    ;/* Set X3 */
-    movlw   0xA9
-    movwf   input_cmd
-    movlw   b'11'
-    andwf   Box, W
-    mullw   box_xoffset
-    movf    input5, W
-    addwf   PRODL, W
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0xAA
-    movwf   input_cmd
-    movlw   .0
-    addwfc  PRODH, W
-    movwf   input_data
-    call    SPI_writeREG
-    
-    ;/* Set Y3 */
-    movlw   0xAB
-    movwf   input_cmd
-    movf    input6, W
-    btfsc   Box, Box_pos3
-    addlw   box_yoffset
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0xAC
-    movwf   input_cmd
-    movlw   .0
-    btfsc   Box, Box_pos3
-    addlw   .1
-    movwf   input_data
-    call    SPI_writeREG
-    
-    ;/* Set Color */
-    movlw   0x63
-    movwf   input_cmd
-    movlw   .7		;0~7
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x64		
-    movwf   input_cmd
-    movlw   .0		;0~7
-    movwf   input_data
-    call    SPI_writeREG
-    movlw   0x65
-    movwf   input_cmd
-    movlw   .0		;0~3
-    movwf   input_data
-    call    SPI_writeREG
-
-    ;/* Draw! */
-    movlw   RA8875_DCR
-    movwf   input_cmd
-    movlw   0xA1
-    movwf   input_data
-    call    SPI_writeREG
-
-    ;/* Wait for the command to finish */
-    movlw   .1
-    call    Delay_ms
-    ;waitPoll(RA8875_DCR, RA8875_DCR_LINESQUTRI_STATUS);
-    return
     
 LCD_LineHelper
     ;/* Set X1 */
@@ -974,12 +748,12 @@ LCD_SetScrollWindow
     call    SPI_writeREG
     return 
     
-LCD_ScrollX    
-    movlw   0x24
+LCD_ScrollY  
+    movlw   0x26
     movwf   input_cmd
     movff   Scroll_d1, input_data
     call    SPI_writeREG
-    movlw   0x25
+    movlw   0x27
     movwf   input_cmd
     movff   Scroll_d2, input_data
     call    SPI_writeREG
@@ -997,5 +771,21 @@ LCD_TwoLayers
     movwf   input_data
     call    SPI_writeREG
     return
+
+Scroll
+    movlw   .223
+    movwf   Scroll_d1
+    movlw   .1
+    movwf   Scroll_d2
+    movlw   0x00		; W=0	
+scrl
+    call    LCD_ScrollX
+    movlw   .5
+    call    Delay_ms
+    decf    Scroll_d1, F	; borrow when 0x00 -> 0xff
+    subwfb  Scroll_d2, F	; no carry when 0x00 -> 0xff
+    bc	    scrl
+    return
+    
     end
 
