@@ -3,6 +3,7 @@
     global Keypad_Setup, Keypad_getKey, Keypad_fail_flag
     extern LCD_delay_ms
 
+    
 acs0    udata_acs   ; reserve data space in access ram
 row_select	res 1
 Keypad_fail_flag res 1
@@ -42,56 +43,48 @@ row0
 	movlw	b'1110'
 	cpfseq	PORTE
 	bra	row1
-	movlw	.1
-	movwf	row_select
-	bra	get_column
+	bsf	row_col, 0
+	
 row1	movlw	b'1101'
 	cpfseq	PORTE
 	bra	row2
-	movlw	.2
-	movwf	row_select
-	bra	get_column
+	bsf	row_col, 1
+
 row2	movlw	b'1011'
 	cpfseq	PORTE
 	bra	row3
-	movlw	.3
-	movwf	row_select
-	bra	get_column
+	bsf	row_col, 2
+	
 row3	movlw	b'0111'
 	cpfseq	PORTE
-	bra	key_fail
-	movlw	.4
-	movwf	row_select
 	bra	get_column
+	bsf	row_col, 3
+	
 get_column
 	clrf	LATE
 	movlw	0xF0
 	movwf	TRISE
 	movlw	.100
 	call	LCD_delay_ms
+	
 column0	movlw	b'11100000'
 	cpfseq	PORTE
 	bra	column1
-	movlw	.0
-	addwf	row_select
-	bra	decoder
+	bsf	row_col, 4
+
 column1	movlw	b'11010000'
 	cpfseq	PORTE
 	bra	column2
-	movlw	.4
-	addwf	row_select
-	bra	decoder
+	bsf	row_col, 5
+	
 column2	movlw	b'10110000'
 	cpfseq	PORTE
 	bra	column3
-	movlw	.8
-	addwf	row_select
-	bra	decoder
+	bsf	row_col, 6
+	
 column3	movlw	b'01110000'
 	cpfseq	PORTE
-	bra	key_fail
-	movlw	.12
-	addwf	row_select
+	bsf	row_col, 7
 	
 decoder	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	decfsz	row_select	; count down to zero
@@ -100,9 +93,11 @@ decoder	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	movwf	Keypad_fail_flag
 	movf	TABLAT, W
 	return
+
 key_fail
 	movlw	.0
 	movwf	Keypad_fail_flag
 	return
 	
 	end
+	
