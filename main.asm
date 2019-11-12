@@ -1,7 +1,7 @@
     #include p18f87k22.inc
 
-    global Delay_ms, SPI_writeREG, Scroll_d1, Scroll_d2
-    extern LCD_Initialisation, input_cmd, input_data, LCD_ScrollX, Box, New_Box
+    global Delay_ms, SPI_writeREG
+    extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
 
 #define	RST		0
 #define	MOSI		4
@@ -16,25 +16,26 @@
 #define RA8875_CMDWRITE         0x80
 #define RA8875_CMDREAD          0xC0
 
-acs0    udata_acs   ; reserve data space in access ram
-Delay_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
-Delay_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
-Delay_cnt_ms  res 1   ; reserve 1 byte for ms counter
-Scroll_speed	res 1
-Scroll_d1	res 1
-Scroll_d2	res 1
+;acs0    udata_acs   ; reserve data space in access ram
+
 	
+acs1    access_ovr
+Delay_cnt_l	res 1   ; reserve 1 byte for variable LCD_cnt_l
+Delay_cnt_h	res 1   ; reserve 1 byte for variable LCD_cnt_h
+Delay_cnt_ms	res 1   ; reserve 1 byte for ms counter
+
 main    code	0
     
-LCD_begin
+Setup
+    ;set pins
     clrf    LATD
     bsf	    LATD, CS
     bsf	    LATD, MOSI
     bsf	    LATD, SCK
-    
     clrf    TRISD
     bsf	    TRISD, MISO
     
+    ;reset
     bcf	    LATD, RST
     movlw   .100
     call    Delay_ms
@@ -42,54 +43,24 @@ LCD_begin
     movlw   .100
     call    Delay_ms
     
+    ;initialise
     call    SPI_MasterInit
-
+    call    LCD_Initialisation    
     
-    call    LCD_Initialisation
-    
-    movlw   b'01110000'
-    movwf   Box
+main
+    movlw   b'11000000'
     call    New_Box
-    
-    movlw   b'01100001'
-    movwf   Box
+    movlw   b'01000000'
     call    New_Box
-    
-    movlw   b'01010010'
-    movwf   Box
+    movlw   b'11000000'
     call    New_Box
-    
-    movlw   b'01000100'
-    movwf   Box
+    movlw   b'11000000'
     call    New_Box
-    
-    movlw   b'01010101'
-    movwf   Box
-    call    New_Box
-    
-    movlw   b'01100110'
-    movwf   Box
+    movlw   b'11000000'
     call    New_Box
     call    Scroll
-
-    
-    
-    
     goto $
-Scroll
-    movlw   0x40
-    movwf   Scroll_d1
-    movlw   0x6
-    movwf   Scroll_d2
-    movlw   0x00		; W=0	
-scrl
-    call    LCD_ScrollX
-    movlw   .5
-    call    Delay_ms
-    decf    Scroll_d1, F	; borrow when 0x00 -> 0xff
-    subwfb  Scroll_d2, F	; no carry when 0x00 -> 0xff
-    bc	    scrl
-    return
+
     
 
 SPI_writeREG
