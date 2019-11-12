@@ -1,7 +1,7 @@
     #include p18f87k22.inc
 
     global Delay_ms, SPI_writeREG, Scroll_d1, Scroll_d2
-    extern LCD_Initialisation, LCD_FillScreen, input_cmd, input_data, LCD_ScrollX
+    extern LCD_Initialisation, input_cmd, input_data, LCD_ScrollX, Box, New_Box
 
 #define	RST		0
 #define	MOSI		4
@@ -47,8 +47,29 @@ LCD_begin
     
     call    LCD_Initialisation
     
-    ;// With hardware accelleration this is instant
-    call    LCD_FillScreen
+    movlw   b'01110000'
+    movwf   Box
+    call    New_Box
+    
+    movlw   b'01100001'
+    movwf   Box
+    call    New_Box
+    
+    movlw   b'01010010'
+    movwf   Box
+    call    New_Box
+    
+    movlw   b'01000100'
+    movwf   Box
+    call    New_Box
+    
+    movlw   b'01010101'
+    movwf   Box
+    call    New_Box
+    
+    movlw   b'01100110'
+    movwf   Box
+    call    New_Box
     call    Scroll
 
     
