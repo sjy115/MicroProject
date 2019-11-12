@@ -235,8 +235,8 @@
 
 #define	box_xstart		.10
 #define	box_ystart		.20
-#define	box_xend		.90
-#define	box_yend		.30
+#define	box_width		.80
+#define	box_height		.10
     
 #define	box_xoffset		.100
 #define	box_yoffset		.50
@@ -268,33 +268,72 @@ rect_x2_l	    res 1
 rect_y2_l	    res 1
 rect_colour	    res 1
 		    
-		    
 Setup	code
 
 NewBox
     movwf   Box
+    movlw   0x41
+    movwf   input_cmd
     btfss   Box, Box_layer
     bra	    LYEN1			;layer 1
-    bra	    LYEN2			;layer 2
-
-    btfss   Box, Box_colour
+    movlw   .1				;layer 2
+SetLayer
+    movwf   input_data
+    call    SPI_writeREG
     
-
-
+    btfss   Box, Box_colour
+    bra	    Colour1			;red
+    movlw   b'00000011'			;blue
+SetColour
+    movwf   input_data
+    call    SPI_writeREG
+    
+    ;x position
+    movlw   b'111'
+    andwf   Box, W
+    mullw   box_xoffset
+    movlw   box_xstart
+    addwf   PRODL, W
+    movwf   rect_x1_l
+    movwf   rect_x2_1
+    movlw   .0
+    addwfc  PRODH, W
+    movwf   rect_x1_h
+    movwf   rect_x2_h
+    
+    movlw   box_width
+    addwf   rect_x2_l
+    movlw   .0
+    addwfc  rect_x2_h
+    
+    ;y position
+    rrncf   Box, W
+    rrncf   W, W
+    rrncf   W, W
+    andlw   b'111'
+    mullw   box_yoffset
+    movlw   box_ystart
+    addwf   PRODL, W
+    movwf   rect_y1_l
+    movwf   rect_y2_1
+    movlw   .0
+    addwfc  PRODH, W
+    movwf   rect_y1_h
+    movwf   rect_y2_h
+    
+    movlw   box_height
+    addwf   rect_y2_l
+    movlw   .0
+    addwfc  rect_y2_h
+    
+    
+    
 LYEN1
-    movlw   0x41
-    movwf   input_cmd
-    movlw   b'00000000'
-    movwf   input_data
-    call    SPI_writeREG
-    return
-LYEN2
-    movlw   0x41
-    movwf   input_cmd
-    movlw   b'00000001'
-    movwf   input_data
-    call    SPI_writeREG
-    return
+    movlw   .0
+    bra	    SetLayer
+Colour1
+    movlw   b'11100000'
+    bra	    SetColour
     
 LCD_RectHelper
     ;x = 0
