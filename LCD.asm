@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, layer_display
+    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll_1to2, Scroll_2to1
     extern Delay_ms, SPI_writeREG
 
 ;Data sheet definition (register array, pin, constant)
@@ -279,15 +279,11 @@ New_Box
     movwf   Box
     
     ;set layer
-    movlw   0x41
-    movwf   input_cmd
     btfss   Box, Box_layer		;Box[6]
     bra	    LYEN1			;layer 1
-    movlw   .1				;layer 2
-SetLayer
-    movwf   input_data
-    call    SPI_writeREG
+    bra	    LYEN2			;layer 2
     
+SetLayer
     ;set colour
     btfss   Box, Box_colour		;Box[7]
     bra	    Colour1			;red
@@ -338,7 +334,19 @@ SetColour
 
 ;temporary subroutine
 LYEN1
-    movlw   .0
+    movlw   0x41
+    movwf   input_cmd
+    movlw   .0				;layer 1
+    movwf   input_data
+    call    SPI_writeREG
+    bra	    SetLayer
+    
+LYEN2
+    movlw   0x41
+    movwf   input_cmd
+    movlw   .1				;layer 2
+    movwf   input_data
+    call    SPI_writeREG
     bra	    SetLayer
 Colour1
     movlw   b'00000111'
@@ -814,7 +822,7 @@ LCD_TwoLayers
     call    SPI_writeREG
     return
 
-Scroll
+Scroll_2to1
     movlw   .223
     movwf   Scroll_d_l
     movlw   .1
@@ -827,90 +835,30 @@ scrl
     decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
     subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
     bc	    scrl
-    decf    layer_cnt
     return
     
-layer_display
+Scroll_1to2
+    movlw   .191
+    movwf   Scroll_d_l
+    movlw   .3
+    movwf   Scroll_d_h
+    movlw   0x00		; W=0	
+scrl2
+    call    LCD_ScrollY
     movlw   .5
-    movwf   layer_cnt
-    bra	    layer_4
-loop
-    call    Scroll
-    movf    layer_cnt, W
-    cpfseq  .3
-    bra	    layer_3
-    cpfseq  .2
-    bra	    layer_2
-    cpfseq  .1
-    bra	    layer_1
-    cpfseq  .0
-    bra	    layer_0
-    goto    $
+    call    Delay_ms
+    decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
+    subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
+    bc	    scrl2
+    return
     
-layer_4
+Clear_Layer
+    movlw   0x8E
+    movwf   input_cmd
     movlw   b'11000000'
-    call    New_Box
-    movlw   b'01000001'
-    call    New_Box
-    movlw   b'11000010'
-    call    New_Box
-    movlw   b'11000011'
-    call    New_Box
-    movlw   b'11000100'
-    call    New_Box
-    bra	    loop
- 
-layer_3
-    movlw   b'01000100'
-    call    New_Box
-    movlw   b'11000101'
-    call    New_Box
-    movlw   b'01000110'
-    call    New_Box
-    movlw   b'11000111'
-    call    New_Box
-    movlw   b'01000000'
-    call    New_Box
-    bra	    loop
-    
-layer_2
-    movlw   b'01000000'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'01000000'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'01000000'
-    call    New_Box
-    bra	    loop
-    
-layer_1
-    movlw   b'11000001'
-    call    New_Box
-    movlw   b'01000010'
-    call    New_Box
-    movlw   b'11000011'
-    call    New_Box
-    movlw   b'11000100'
-    call    New_Box
-    movlw   b'11000101'
-    call    New_Box
-    bra	    loop
-    
-layer_0
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'01000000'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    bra	    loop
-    
+    movwf   input_data
+    call    SPI_writeREG
+    return
+
     end
 
