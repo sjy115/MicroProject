@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll_1to2, Scroll_2to1
-    extern Delay_ms, SPI_writeREG
+    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+    extern Delay_ms, SPI_writeREG, Keypad_getKey, Keypad_output
 
 ;Data sheet definition (register array, pin, constant)
 ; Colors (RGB565)
@@ -249,8 +249,7 @@
 #define	Box_y1	    3
 #define	Box_y2	    4
 #define	Box_y3	    5
-#define	Box_layer   6
-#define	Box_colour  7
+#define	Box_colour  6
     
 
 acs0    udata_acs   ; reserve data space in access ram
@@ -272,18 +271,15 @@ rect_colour	    res 1
 	    
 Scroll_d_l	    res 1
 Scroll_d_h	    res 1
+	    
+Control		    res 1
 		    
 LCD	code
 
+;Create new box
 New_Box
     movwf   Box
     
-    ;set layer
-    btfss   Box, Box_layer		;Box[6]
-    bra	    LYEN1			;layer 1
-    bra	    LYEN2			;layer 2
-    
-SetLayer
     ;set colour
     btfss   Box, Box_colour		;Box[7]
     bra	    Colour1			;red
@@ -351,6 +347,62 @@ LYEN2
 Colour1
     movlw   b'00000111'
     bra	    SetColour
+    
+;Scroll next layer
+Scroll
+    btfss   Control, active_layer
+    bra	    scroll2
+    
+    movlw   .223
+    movwf   Scroll_d_l
+    movlw   .1
+    movwf   Scroll_d_h
+    movlw   0x00		; W=0	
+scrl
+    call    LCD_ScrollY
+    movlw   .5
+    call    Delay_ms
+    decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
+    subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
+    call    test_keypad
+    bc	    scrl
+    btg	    Control, active_layer
+    btfss   Control, active_layer
+    bra	    ly1
+    call    LYEN2
+cly call    Clear_Layer
+    return
+    
+ly1 call    LYEN1
+    bra	    cly
+
+test_keypad
+    call    decode_             
+    call    Keypad_getKey
+    
+;temporary subroutine
+scroll2
+    movlw   .191
+    movwf   Scroll_d_l
+    movlw   .3
+    movwf   Scroll_d_h
+    movlw   0x00		; W=0	
+    bra	    scrl
+
+    
+Clear_Layer
+    movlw   0x8E
+    movwf   input_cmd
+    btfss   Control,active_layer
+    bra	    cl1
+    movlw   b'11000000'
+cl2 movwf   input_data
+    call    SPI_writeREG
+    return
+    
+;temporary subroutine
+cl1 movlw   b'10000000'
+    bra	    cl2
     
 LCD_RectHelper
     ;/* Set X1 */
@@ -798,17 +850,6 @@ LCD_SetScrollWindow
     call    SPI_writeREG
     return 
     
-LCD_ScrollY  
-    movlw   0x26
-    movwf   input_cmd
-    movff   Scroll_d_l, input_data
-    call    SPI_writeREG
-    movlw   0x27
-    movwf   input_cmd
-    movff   Scroll_d_h, input_data
-    call    SPI_writeREG
-    return
-    
 LCD_TwoLayers
     movlw   0x20
     movwf   input_cmd
@@ -821,44 +862,16 @@ LCD_TwoLayers
     movwf   input_data
     call    SPI_writeREG
     return
-
-Scroll_2to1
-    movlw   .223
-    movwf   Scroll_d_l
-    movlw   .1
-    movwf   Scroll_d_h
-    movlw   0x00		; W=0	
-scrl
-    call    LCD_ScrollY
-    movlw   .5
-    call    Delay_ms
-    decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
-    subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
-    bc	    scrl
-    return
     
-Scroll_1to2
-    movlw   .191
-    movwf   Scroll_d_l
-    movlw   .3
-    movwf   Scroll_d_h
-    movlw   0x00		; W=0	
-scrl2
-    call    LCD_ScrollY
-    movlw   .5
-    call    Delay_ms
-    decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
-    subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
-    bc	    scrl2
-    return
-    
-Clear_Layer
-    movlw   0x8E
+LCD_ScrollY  
+    movlw   0x26
     movwf   input_cmd
-    movlw   b'11000000'
-    movwf   input_data
+    movff   Scroll_d_l, input_data
+    call    SPI_writeREG
+    movlw   0x27
+    movwf   input_cmd
+    movff   Scroll_d_h, input_data
     call    SPI_writeREG
     return
-
     end
 
