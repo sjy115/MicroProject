@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, layer_display
     extern Delay_ms, SPI_writeREG
 
 ;Data sheet definition (register array, pin, constant)
@@ -257,6 +257,8 @@ acs0    udata_acs   ; reserve data space in access ram
 input_cmd	    res 1
 input_data	    res 1
 
+layer_cnt	    res 1
+	    
 Box		    res 1
 rect_x1_h	    res 1
 rect_y1_h	    res 1
@@ -825,7 +827,90 @@ scrl
     decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
     subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
     bc	    scrl
+    decf    layer_cnt
     return
+    
+layer_display
+    movlw   .5
+    movwf   layer_cnt
+    bra	    layer_4
+loop
+    call    Scroll
+    movf    layer_cnt, W
+    cpfseq  .3
+    bra	    layer_3
+    cpfseq  .2
+    bra	    layer_2
+    cpfseq  .1
+    bra	    layer_1
+    cpfseq  .0
+    bra	    layer_0
+    goto    $
+    
+layer_4
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'01000001'
+    call    New_Box
+    movlw   b'11000010'
+    call    New_Box
+    movlw   b'11000011'
+    call    New_Box
+    movlw   b'11000100'
+    call    New_Box
+    bra	    loop
+ 
+layer_3
+    movlw   b'01000100'
+    call    New_Box
+    movlw   b'11000101'
+    call    New_Box
+    movlw   b'01000110'
+    call    New_Box
+    movlw   b'11000111'
+    call    New_Box
+    movlw   b'01000000'
+    call    New_Box
+    bra	    loop
+    
+layer_2
+    movlw   b'01000000'
+    call    New_Box
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'01000000'
+    call    New_Box
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'01000000'
+    call    New_Box
+    bra	    loop
+    
+layer_1
+    movlw   b'11000001'
+    call    New_Box
+    movlw   b'01000010'
+    call    New_Box
+    movlw   b'11000011'
+    call    New_Box
+    movlw   b'11000100'
+    call    New_Box
+    movlw   b'11000101'
+    call    New_Box
+    bra	    loop
+    
+layer_0
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'01000000'
+    call    New_Box
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'11000000'
+    call    New_Box
+    movlw   b'11000000'
+    call    New_Box
+    bra	    loop
     
     end
 

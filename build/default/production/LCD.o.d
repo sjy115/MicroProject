@@ -1,3 +1,3 @@
 build/default/production/LCD.o:  \
-	H:/Desktop/Microprocessor/Project/LCD.asm  \
+	H:/Desktop/Lab/Year\ 3/NEWNEW/Project_Lab/LCD.asm  \
 

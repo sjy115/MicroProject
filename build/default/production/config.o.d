@@ -1,3 +1,3 @@
 build/default/production/config.o:  \
-	H:/Desktop/Microprocessor/Project/config.asm  \
+	H:/Desktop/Lab/Year\ 3/NEWNEW/Project_Lab/config.asm  \
 
