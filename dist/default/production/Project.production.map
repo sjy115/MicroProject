@@ -1,12 +1,12 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Tue Nov 12 17:23:59 2019
+Linker Map File - Created Wed Nov 13 15:00:05 2019
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
-                     main       code   0x000000    program   0x0000e4
-                   .cinit    romdata   0x0000e4    program   0x000002
-                    Setup       code   0x0000e6    program   0x000570
+                     main       code   0x000000    program   0x0000fc
+                   .cinit    romdata   0x0000fc    program   0x000002
+                      LCD       code   0x0000fe    program   0x000442
 .config_300000_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x300000    program   0x000001
 .config_300001_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x300001    program   0x000001
 .config_300002_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x300002    program   0x000001
@@ -20,138 +20,125 @@ Linker Map File - Created Tue Nov 12 17:23:59 2019
 .config_30000B_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x30000b    program   0x000001
 .config_30000C_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x30000c    program   0x000001
 .config_30000D_BUILD/DEFAULT/PRODUCTION/CONFIG.    romdata   0x30000d    program   0x000001
-                     acs0      udata   0x000000       data   0x000013
+                     acs0      udata   0x000000       data   0x00000e
+                     acs1      udata   0x00000e       data   0x000003
 
 
 
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x000655      
+                            0x000000    0x00053f      
                             0x300000    0x300006      
                             0x300008    0x30000d      
-            1635 out of 132120 program addresses used, program memory utilization is 1%
+            1357 out of 132120 program addresses used, program memory utilization is 1%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                    Delay   0x0000da    program     static H:\Desktop\Microprocessor\Project\main.asm
-                 Delay_ms   0x0000b8    program     extern H:\Desktop\Microprocessor\Project\main.asm
-               Delay_x4us   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
-            LCD_DisplayOn   0x00057c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                LCD_GPIOX   0x00058a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-       LCD_Initialisation   0x000416    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_LineHelper   0x00037e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_PLLinit   0x000554    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_PWM1config   0x000598    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_PWM1out   0x0005a6    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_RectHelper   0x000194    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_ScrollX   0x000622    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-      LCD_SetScrollWindow   0x0005b4    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-            LCD_TriHelper   0x000280    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-            LCD_TwoLayers   0x00063c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                LCD_begin   0x000000    program     static H:\Desktop\Microprocessor\Project\main.asm
-                    LYEN1   0x000178    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                    LYEN2   0x000186    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                  New_Box   0x0000e6    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-           SPI_MasterInit   0x0000a6    program     static H:\Desktop\Microprocessor\Project\main.asm
-       SPI_MasterTransmit   0x0000ae    program     static H:\Desktop\Microprocessor\Project\main.asm
-             SPI_writeCMD   0x000082    program     static H:\Desktop\Microprocessor\Project\main.asm
-            SPI_writeDATA   0x000094    program     static H:\Desktop\Microprocessor\Project\main.asm
-             SPI_writeREG   0x000078    program     extern H:\Desktop\Microprocessor\Project\main.asm
-                   Scroll   0x00005c    program     static H:\Desktop\Microprocessor\Project\main.asm
-                 Tri_down   0x00011e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                 Tri_left   0x000100    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                Tri_right   0x00013c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   Tri_up   0x00015a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-            Wait_Transmit   0x0000b0    program     static H:\Desktop\Microprocessor\Project\main.asm
-               _main_0058   0x000058    program     static H:\Desktop\Microprocessor\Project\main.asm
-                      lp1   0x0000dc    program     static H:\Desktop\Microprocessor\Project\main.asm
-                      lp2   0x0000ba    program     static H:\Desktop\Microprocessor\Project\main.asm
-             one_or_three   0x0000fa    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                     scrl   0x000066    program     static H:\Desktop\Microprocessor\Project\main.asm
-              zero_or_two   0x0000f4    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                      Box   0x00000b       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_h   0x000001       data     static H:\Desktop\Microprocessor\Project\main.asm
-              Delay_cnt_h   0x000009       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_l   0x000008       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_l   0x000000       data     static H:\Desktop\Microprocessor\Project\main.asm
-             Delay_cnt_ms   0x000002       data     static H:\Desktop\Microprocessor\Project\main.asm
-             Delay_cnt_ms   0x00000a       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                Scroll_d1   0x000004       data     extern H:\Desktop\Microprocessor\Project\main.asm
-                Scroll_d2   0x000005       data     extern H:\Desktop\Microprocessor\Project\main.asm
-             Scroll_speed   0x000003       data     static H:\Desktop\Microprocessor\Project\main.asm
-                      dir   0x000012       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input1   0x00000c       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input2   0x00000d       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input3   0x00000e       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input4   0x00000f       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input5   0x000010       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input6   0x000011       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                input_cmd   0x000006       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
-               input_data   0x000007       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
+                  Colour1   0x000162    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                    Delay   0x0000f2    program     static H:\Desktop\Microprocessor\Project\main.asm
+                 Delay_ms   0x0000d0    program     extern H:\Desktop\Microprocessor\Project\main.asm
+               Delay_x4us   0x0000de    program     static H:\Desktop\Microprocessor\Project\main.asm
+            LCD_DisplayOn   0x00044a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                LCD_GPIOX   0x000458    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+       LCD_Initialisation   0x0002e4    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_LineHelper   0x00023e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_PLLinit   0x000422    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_PWM1config   0x000466    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_PWM1out   0x000474    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_RectHelper   0x000166    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_ScrollY   0x0004f0    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+      LCD_SetScrollWindow   0x000482    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+            LCD_TwoLayers   0x00050a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                    LYEN1   0x00015e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                  New_Box   0x0000fe    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+           SPI_MasterInit   0x0000be    program     static H:\Desktop\Microprocessor\Project\main.asm
+       SPI_MasterTransmit   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeCMD   0x00009a    program     static H:\Desktop\Microprocessor\Project\main.asm
+            SPI_writeDATA   0x0000ac    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeREG   0x000090    program     extern H:\Desktop\Microprocessor\Project\main.asm
+                   Scroll   0x000524    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+                SetColour   0x000116    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                 SetLayer   0x00010a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                    Setup   0x000000    program     static H:\Desktop\Microprocessor\Project\main.asm
+            Wait_Transmit   0x0000c8    program     static H:\Desktop\Microprocessor\Project\main.asm
+               _main_008C   0x00008c    program     static H:\Desktop\Microprocessor\Project\main.asm
+                      lp1   0x0000f4    program     static H:\Desktop\Microprocessor\Project\main.asm
+                      lp2   0x0000d2    program     static H:\Desktop\Microprocessor\Project\main.asm
+                     scrl   0x00052e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                      Box   0x000002       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+              Delay_cnt_h   0x00000f       data     static H:\Desktop\Microprocessor\Project\main.asm
+              Delay_cnt_l   0x00000e       data     static H:\Desktop\Microprocessor\Project\main.asm
+             Delay_cnt_ms   0x000010       data     static H:\Desktop\Microprocessor\Project\main.asm
+               Scroll_d_h   0x00000d       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+               Scroll_d_l   0x00000c       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                input_cmd   0x000000       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
+               input_data   0x000001       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
+              rect_colour   0x00000b       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x1_h   0x000003       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x1_l   0x000007       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x2_h   0x000005       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x2_l   0x000009       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y1_h   0x000004       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y1_l   0x000008       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y2_h   0x000006       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y2_l   0x00000a       data     static H:\Desktop\Microprocessor\Project\LCD.asm
 
 
 
                               Symbols - Sorted by Address
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                LCD_begin   0x000000    program     static H:\Desktop\Microprocessor\Project\main.asm
-               _main_0058   0x000058    program     static H:\Desktop\Microprocessor\Project\main.asm
-                   Scroll   0x00005c    program     static H:\Desktop\Microprocessor\Project\main.asm
-                     scrl   0x000066    program     static H:\Desktop\Microprocessor\Project\main.asm
-             SPI_writeREG   0x000078    program     extern H:\Desktop\Microprocessor\Project\main.asm
-             SPI_writeCMD   0x000082    program     static H:\Desktop\Microprocessor\Project\main.asm
-            SPI_writeDATA   0x000094    program     static H:\Desktop\Microprocessor\Project\main.asm
-           SPI_MasterInit   0x0000a6    program     static H:\Desktop\Microprocessor\Project\main.asm
-       SPI_MasterTransmit   0x0000ae    program     static H:\Desktop\Microprocessor\Project\main.asm
-            Wait_Transmit   0x0000b0    program     static H:\Desktop\Microprocessor\Project\main.asm
-                 Delay_ms   0x0000b8    program     extern H:\Desktop\Microprocessor\Project\main.asm
-                      lp2   0x0000ba    program     static H:\Desktop\Microprocessor\Project\main.asm
-               Delay_x4us   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
-                    Delay   0x0000da    program     static H:\Desktop\Microprocessor\Project\main.asm
-                      lp1   0x0000dc    program     static H:\Desktop\Microprocessor\Project\main.asm
-                  New_Box   0x0000e6    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-              zero_or_two   0x0000f4    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-             one_or_three   0x0000fa    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                 Tri_left   0x000100    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                 Tri_down   0x00011e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                Tri_right   0x00013c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   Tri_up   0x00015a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                    LYEN1   0x000178    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                    LYEN2   0x000186    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_RectHelper   0x000194    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-            LCD_TriHelper   0x000280    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_LineHelper   0x00037e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-       LCD_Initialisation   0x000416    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_PLLinit   0x000554    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-            LCD_DisplayOn   0x00057c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-                LCD_GPIOX   0x00058a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-           LCD_PWM1config   0x000598    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_PWM1out   0x0005a6    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-      LCD_SetScrollWindow   0x0005b4    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              LCD_ScrollX   0x000622    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
-            LCD_TwoLayers   0x00063c    program     static H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_l   0x000000       data     static H:\Desktop\Microprocessor\Project\main.asm
-              Delay_cnt_h   0x000001       data     static H:\Desktop\Microprocessor\Project\main.asm
-             Delay_cnt_ms   0x000002       data     static H:\Desktop\Microprocessor\Project\main.asm
-             Scroll_speed   0x000003       data     static H:\Desktop\Microprocessor\Project\main.asm
-                Scroll_d1   0x000004       data     extern H:\Desktop\Microprocessor\Project\main.asm
-                Scroll_d2   0x000005       data     extern H:\Desktop\Microprocessor\Project\main.asm
-                input_cmd   0x000006       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
-               input_data   0x000007       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_l   0x000008       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-              Delay_cnt_h   0x000009       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-             Delay_cnt_ms   0x00000a       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                      Box   0x00000b       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
-                   input1   0x00000c       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input2   0x00000d       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input3   0x00000e       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input4   0x00000f       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input5   0x000010       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                   input6   0x000011       data     static H:\Desktop\Microprocessor\Project\LCD.asm
-                      dir   0x000012       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                    Setup   0x000000    program     static H:\Desktop\Microprocessor\Project\main.asm
+               _main_008C   0x00008c    program     static H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeREG   0x000090    program     extern H:\Desktop\Microprocessor\Project\main.asm
+             SPI_writeCMD   0x00009a    program     static H:\Desktop\Microprocessor\Project\main.asm
+            SPI_writeDATA   0x0000ac    program     static H:\Desktop\Microprocessor\Project\main.asm
+           SPI_MasterInit   0x0000be    program     static H:\Desktop\Microprocessor\Project\main.asm
+       SPI_MasterTransmit   0x0000c6    program     static H:\Desktop\Microprocessor\Project\main.asm
+            Wait_Transmit   0x0000c8    program     static H:\Desktop\Microprocessor\Project\main.asm
+                 Delay_ms   0x0000d0    program     extern H:\Desktop\Microprocessor\Project\main.asm
+                      lp2   0x0000d2    program     static H:\Desktop\Microprocessor\Project\main.asm
+               Delay_x4us   0x0000de    program     static H:\Desktop\Microprocessor\Project\main.asm
+                    Delay   0x0000f2    program     static H:\Desktop\Microprocessor\Project\main.asm
+                      lp1   0x0000f4    program     static H:\Desktop\Microprocessor\Project\main.asm
+                  New_Box   0x0000fe    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+                 SetLayer   0x00010a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                SetColour   0x000116    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                    LYEN1   0x00015e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                  Colour1   0x000162    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_RectHelper   0x000166    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_LineHelper   0x00023e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+       LCD_Initialisation   0x0002e4    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_PLLinit   0x000422    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+            LCD_DisplayOn   0x00044a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                LCD_GPIOX   0x000458    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+           LCD_PWM1config   0x000466    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_PWM1out   0x000474    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+      LCD_SetScrollWindow   0x000482    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+              LCD_ScrollY   0x0004f0    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+            LCD_TwoLayers   0x00050a    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                   Scroll   0x000524    program     extern H:\Desktop\Microprocessor\Project\LCD.asm
+                     scrl   0x00052e    program     static H:\Desktop\Microprocessor\Project\LCD.asm
+                input_cmd   0x000000       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
+               input_data   0x000001       data     extern H:\Desktop\Microprocessor\Project\LCD.asm
+                      Box   0x000002       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x1_h   0x000003       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y1_h   0x000004       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x2_h   0x000005       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y2_h   0x000006       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x1_l   0x000007       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y1_l   0x000008       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_x2_l   0x000009       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+                rect_y2_l   0x00000a       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+              rect_colour   0x00000b       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+               Scroll_d_l   0x00000c       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+               Scroll_d_h   0x00000d       data     static H:\Desktop\Microprocessor\Project\LCD.asm
+              Delay_cnt_l   0x00000e       data     static H:\Desktop\Microprocessor\Project\main.asm
+              Delay_cnt_h   0x00000f       data     static H:\Desktop\Microprocessor\Project\main.asm
+             Delay_cnt_ms   0x000010       data     static H:\Desktop\Microprocessor\Project\main.asm
 
 
