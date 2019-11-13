@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.asm config.asm LCD.asm
+SOURCEFILES_QUOTED_IF_SPACED=config.asm LCD.asm Keypad.asm Simple1.asm //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/config.o.d ${OBJECTDIR}/LCD.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/Simple1.o ${OBJECTDIR}/_ext/2011413172/Keypad.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/config.o.d ${OBJECTDIR}/LCD.o.d ${OBJECTDIR}/Keypad.o.d ${OBJECTDIR}/Simple1.o.d ${OBJECTDIR}/_ext/2011413172/Keypad.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o
+OBJECTFILES=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/Simple1.o ${OBJECTDIR}/_ext/2011413172/Keypad.o
 
 # Source Files
-SOURCEFILES=main.asm config.asm LCD.asm
+SOURCEFILES=config.asm LCD.asm Keypad.asm Simple1.asm //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm
 
 
 CFLAGS=
@@ -94,14 +94,6 @@ MP_LINKER_DEBUG_OPTION=
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: assemble
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/main.o: main.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/main.o.d 
-	@${RM} ${OBJECTDIR}/main.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/main.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/main.lst\" -e\"${OBJECTDIR}/main.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/main.o\" \"main.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/main.o"
-	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
-	
 ${OBJECTDIR}/config.o: config.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/config.o.d 
@@ -118,15 +110,31 @@ ${OBJECTDIR}/LCD.o: LCD.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d "${OBJECTDIR}/LCD.o"
 	@${FIXDEPS} "${OBJECTDIR}/LCD.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-else
-${OBJECTDIR}/main.o: main.asm  nbproject/Makefile-${CND_CONF}.mk
+${OBJECTDIR}/Keypad.o: Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/main.o.d 
-	@${RM} ${OBJECTDIR}/main.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/main.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/main.lst\" -e\"${OBJECTDIR}/main.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/main.o\" \"main.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/main.o"
-	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	@${RM} ${OBJECTDIR}/Keypad.o.d 
+	@${RM} ${OBJECTDIR}/Keypad.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Keypad.lst\" -e\"${OBJECTDIR}/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Keypad.o\" \"Keypad.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Keypad.o"
+	@${FIXDEPS} "${OBJECTDIR}/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
+${OBJECTDIR}/Simple1.o: Simple1.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Simple1.o.d 
+	@${RM} ${OBJECTDIR}/Simple1.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Simple1.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Simple1.lst\" -e\"${OBJECTDIR}/Simple1.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Simple1.o\" \"Simple1.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Simple1.o"
+	@${FIXDEPS} "${OBJECTDIR}/Simple1.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/_ext/2011413172/Keypad.o: //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/2011413172" 
+	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o.d 
+	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/2011413172/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/2011413172/Keypad.lst\" -e\"${OBJECTDIR}/_ext/2011413172/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/2011413172/Keypad.o\" \"//icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/2011413172/Keypad.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/2011413172/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+else
 ${OBJECTDIR}/config.o: config.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/config.o.d 
@@ -142,6 +150,30 @@ ${OBJECTDIR}/LCD.o: LCD.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/LCD.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/LCD.lst\" -e\"${OBJECTDIR}/LCD.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/LCD.o\" \"LCD.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/LCD.o"
 	@${FIXDEPS} "${OBJECTDIR}/LCD.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/Keypad.o: Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Keypad.o.d 
+	@${RM} ${OBJECTDIR}/Keypad.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Keypad.lst\" -e\"${OBJECTDIR}/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Keypad.o\" \"Keypad.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Keypad.o"
+	@${FIXDEPS} "${OBJECTDIR}/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/Simple1.o: Simple1.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Simple1.o.d 
+	@${RM} ${OBJECTDIR}/Simple1.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Simple1.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Simple1.lst\" -e\"${OBJECTDIR}/Simple1.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Simple1.o\" \"Simple1.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Simple1.o"
+	@${FIXDEPS} "${OBJECTDIR}/Simple1.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/_ext/2011413172/Keypad.o: //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/2011413172" 
+	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o.d 
+	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/2011413172/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/2011413172/Keypad.lst\" -e\"${OBJECTDIR}/_ext/2011413172/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/2011413172/Keypad.o\" \"//icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/2011413172/Keypad.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/2011413172/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 
