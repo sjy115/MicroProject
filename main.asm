@@ -1,7 +1,7 @@
 #include p18f87k22.inc
 
     global Delay_ms, SPI_writeREG
-    extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+    extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll_1to2, Scroll_2to1
 
 #define	RST		0
 #define	MOSI		4
@@ -47,41 +47,12 @@ Setup
     call    SPI_MasterInit
     call    LCD_Initialisation    
 
-    movlw   b'10000000'
+    movlw   b'00000000'
     call    New_Box
-    movlw   b'00001001'
+    call    Scroll_2to1
+    movlw   b'11000001'
     call    New_Box
-    movlw   b'10010010'
-    call    New_Box
-    movlw   b'00011011'
-    call    New_Box
-    movlw   b'10100100'
-    call    New_Box
-    movlw   b'00101101'
-    call    New_Box
-    movlw   b'10110110'
-    call    New_Box
-    movlw   b'00111111'
-    call    New_Box
-    movlw   b'11000000'
-    call    New_Box
-    movlw   b'01001001'
-    call    New_Box
-    movlw   b'11010010'
-    call    New_Box
-    movlw   b'01011011'
-    call    New_Box
-    movlw   b'11100100'
-    call    New_Box
-    movlw   b'01101101'
-    call    New_Box
-    movlw   b'11110110'
-    call    New_Box
-    movlw   b'01111111'
-    call    New_Box
-    
-    call    Scroll
-    call    Scroll
+    call    Scroll_1to2
     goto $
 
     

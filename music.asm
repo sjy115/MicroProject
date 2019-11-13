@@ -37,27 +37,3 @@ UART_Receive_Byte
     
    
     end
-
-boolean Adafruit_Soundboard::playTrack(char *name) {
-  while (stream->available())
-    stream->read();
-
-  stream->print("P"); stream->println(name);
-
-  readLine();  // eat return
-#ifdef DEBUG
-  Serial.print("\n\r<--- "); Serial.println(line_buffer);
-#endif
-
-  readLine();
-
-#ifdef DEBUG
-  Serial.print("\n\r<--- "); Serial.println(line_buffer);
-#endif
-
-  // check we got "play" back
-  if (strstr(line_buffer, "play") == 0) {
-    return false;
-  }
-  return true;
-}

@@ -1,4 +1,4 @@
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  1
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -17,7 +17,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       02986         LIST
                       00002 
   0000                00003     global Delay_ms, SPI_writeREG
-  0000                00004     extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+  0000                00004     extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll_1to2, Scroll_2to1
                       00005 
                       00006 #define RST             0
                       00007 #define MOSI            4
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 000010 EC?? F???      00041     call    Delay_ms
 000014 808C           00042     bsf     LATD, RST
 000016 0E64           00043     movlw   .100
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  2
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -69,125 +69,90 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00001C EC?? F???      00047     call    SPI_MasterInit
 000020 EC?? F???      00048     call    LCD_Initialisation    
                       00049 
-000024 0E80           00050     movlw   b'10000000'
+000024 0E00           00050     movlw   b'00000000'
 000026 EC?? F???      00051     call    New_Box
-00002A 0E09           00052     movlw   b'00001001'
-00002C EC?? F???      00053     call    New_Box
-000030 0E92           00054     movlw   b'10010010'
-000032 EC?? F???      00055     call    New_Box
-000036 0E1B           00056     movlw   b'00011011'
-000038 EC?? F???      00057     call    New_Box
-00003C 0EA4           00058     movlw   b'10100100'
-00003E EC?? F???      00059     call    New_Box
-000042 0E2D           00060     movlw   b'00101101'
-000044 EC?? F???      00061     call    New_Box
-000048 0EB6           00062     movlw   b'10110110'
-00004A EC?? F???      00063     call    New_Box
-00004E 0E3F           00064     movlw   b'00111111'
-000050 EC?? F???      00065     call    New_Box
-000054 0EC0           00066     movlw   b'11000000'
-000056 EC?? F???      00067     call    New_Box
-00005A 0E49           00068     movlw   b'01001001'
-00005C EC?? F???      00069     call    New_Box
-000060 0ED2           00070     movlw   b'11010010'
-000062 EC?? F???      00071     call    New_Box
-000066 0E5B           00072     movlw   b'01011011'
-000068 EC?? F???      00073     call    New_Box
-00006C 0EE4           00074     movlw   b'11100100'
-00006E EC?? F???      00075     call    New_Box
-000072 0E6D           00076     movlw   b'01101101'
-000074 EC?? F???      00077     call    New_Box
-000078 0EF6           00078     movlw   b'11110110'
-00007A EC?? F???      00079     call    New_Box
-00007E 0E7F           00080     movlw   b'01111111'
-000080 EC?? F???      00081     call    New_Box
-                      00082     
-000084 EC?? F???      00083     call    Scroll
-000088 EC?? F???      00084     call    Scroll
-00008C EF?? F???      00085     goto $
-                      00086 
-                      00087     
-                      00088 
-000090                00089 SPI_writeREG
-000090 EC?? F???      00090     call    SPI_writeCMD
-000094 EC?? F???      00091     call    SPI_writeDATA
-000098 0012           00092     return
-                      00093 
-                      00094     
-00009A                00095 SPI_writeCMD
-00009A 9E8C           00096     bcf     LATD, CS
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  3
+00002A EC?? F???      00052     call    Scroll_2to1
+00002E 0EC1           00053     movlw   b'11000001'
+000030 EC?? F???      00054     call    New_Box
+000034 EC?? F???      00055     call    Scroll_1to2
+000038 EF?? F???      00056     goto $
+                      00057 
+                      00058     
+                      00059 
+00003C                00060 SPI_writeREG
+00003C EC?? F???      00061     call    SPI_writeCMD
+000040 EC?? F???      00062     call    SPI_writeDATA
+000044 0012           00063     return
+                      00064 
+                      00065     
+000046                00066 SPI_writeCMD
+000046 9E8C           00067     bcf     LATD, CS
+000048 0E80           00068     movlw   RA8875_CMDWRITE
+00004A EC?? F???      00069     call    SPI_MasterTransmit
+00004E 50??           00070     movf    input_cmd, W
+000050 EC?? F???      00071     call    SPI_MasterTransmit
+000054 8E8C           00072     bsf     LATD, CS
+000056 0012           00073     return
+                      00074     
+000058                00075 SPI_writeDATA
+000058 9E8C           00076     bcf     LATD, CS
+00005A 0E00           00077     movlw   RA8875_DATAWRITE
+00005C EC?? F???      00078     call    SPI_MasterTransmit
+000060 50??           00079     movf    input_data, W
+000062 EC?? F???      00080     call    SPI_MasterTransmit
+000066 8E8C           00081     bsf     LATD, CS    
+000068 0012           00082     return
+                      00083     
+00006A                00084 SPI_MasterInit ; Set Clock edge to negative
+00006A 9C68           00085     bcf SSP2STAT, CKE
+                      00086     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
+00006C 0E32           00087     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
+00006E 6E67           00088     movwf SSP2CON1
+000070 0012           00089     return
+                      00090     
+000072                00091 SPI_MasterTransmit ; Start transmission of data (held in W)
+000072 6E6A           00092     movwf SSP2BUF
+                      00093     
+000074                00094 Wait_Transmit ; Wait for transmission to complete
+000074 AAA1           00095     btfss PIR2, SSP2IF
+000076 D???           00096     bra Wait_Transmit
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00009C 0E80           00097     movlw   RA8875_CMDWRITE
-00009E EC?? F???      00098     call    SPI_MasterTransmit
-0000A2 50??           00099     movf    input_cmd, W
-0000A4 EC?? F???      00100     call    SPI_MasterTransmit
-0000A8 8E8C           00101     bsf     LATD, CS
-0000AA 0012           00102     return
-                      00103     
-0000AC                00104 SPI_writeDATA
-0000AC 9E8C           00105     bcf     LATD, CS
-0000AE 0E00           00106     movlw   RA8875_DATAWRITE
-0000B0 EC?? F???      00107     call    SPI_MasterTransmit
-0000B4 50??           00108     movf    input_data, W
-0000B6 EC?? F???      00109     call    SPI_MasterTransmit
-0000BA 8E8C           00110     bsf     LATD, CS    
-0000BC 0012           00111     return
-                      00112     
-0000BE                00113 SPI_MasterInit ; Set Clock edge to negative
-0000BE 9C68           00114     bcf SSP2STAT, CKE
-                      00115     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-0000C0 0E32           00116     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-0000C2 6E67           00117     movwf SSP2CON1
-0000C4 0012           00118     return
-                      00119     
-0000C6                00120 SPI_MasterTransmit ; Start transmission of data (held in W)
-0000C6 6E6A           00121     movwf SSP2BUF
-                      00122     
-0000C8                00123 Wait_Transmit ; Wait for transmission to complete
-0000C8 AAA1           00124     btfss PIR2, SSP2IF
-0000CA D???           00125     bra Wait_Transmit
-0000CC 9AA1           00126     bcf PIR2, SSP2IF ; clear interrupt flag
-0000CE 0012           00127     return
-                      00128 
-0000D0                00129 Delay_ms                    ; Delay given in ms in W
-0000D0 6E??           00130         movwf   Delay_cnt_ms
-0000D2 0EFA           00131 lp2     movlw   .250        ; 1 ms Delay
-0000D4 EC?? F???      00132         call    Delay_x4us      
-0000D8 2E??           00133         decfsz  Delay_cnt_ms
-0000DA D???           00134         bra     lp2
-0000DC 0012           00135         return
-                      00136 
-0000DE                00137 Delay_x4us                  ; Delay given in chunks of 4 microsecond in W
-0000DE 6E??           00138         movwf   Delay_cnt_l   ; now need to multiply by 16
-0000E0 3A??           00139         swapf   Delay_cnt_l,F ; swap nibbles
-0000E2 0E0F           00140         movlw   0x0f        
-0000E4 14??           00141         andwf   Delay_cnt_l,W ; move low nibble to W
-0000E6 6E??           00142         movwf   Delay_cnt_h   ; then to LCD_cnt_h
-0000E8 0EF0           00143         movlw   0xf0        
-0000EA 16??           00144         andwf   Delay_cnt_l,F ; keep high nibble in LCD_cnt_l
-0000EC EC?? F???      00145         call    Delay
-0000F0 0012           00146         return
-                      00147 
-0000F2                00148 Delay                   ; Delay routine 4 instruction loop == 250ns         
-0000F2 0E00           00149         movlw   0x00            ; W=0
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  4
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-0000F4 06??           00150 lp1     decf    Delay_cnt_l,F   ; no carry when 0x00 -> 0xff
-0000F6 5A??           00151         subwfb  Delay_cnt_h,F   ; no carry when 0x00 -> 0xff
-0000F8 E2??           00152         bc      lp1             ; carry, then loop again
-0000FA 0012           00153         return                  ; carry reset so return
-                      00154         
-                      00155     end
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  5
+000078 9AA1           00097     bcf PIR2, SSP2IF ; clear interrupt flag
+00007A 0012           00098     return
+                      00099 
+00007C                00100 Delay_ms                    ; Delay given in ms in W
+00007C 6E??           00101         movwf   Delay_cnt_ms
+00007E 0EFA           00102 lp2     movlw   .250        ; 1 ms Delay
+000080 EC?? F???      00103         call    Delay_x4us      
+000084 2E??           00104         decfsz  Delay_cnt_ms
+000086 D???           00105         bra     lp2
+000088 0012           00106         return
+                      00107 
+00008A                00108 Delay_x4us                  ; Delay given in chunks of 4 microsecond in W
+00008A 6E??           00109         movwf   Delay_cnt_l   ; now need to multiply by 16
+00008C 3A??           00110         swapf   Delay_cnt_l,F ; swap nibbles
+00008E 0E0F           00111         movlw   0x0f        
+000090 14??           00112         andwf   Delay_cnt_l,W ; move low nibble to W
+000092 6E??           00113         movwf   Delay_cnt_h   ; then to LCD_cnt_h
+000094 0EF0           00114         movlw   0xf0        
+000096 16??           00115         andwf   Delay_cnt_l,F ; keep high nibble in LCD_cnt_l
+000098 EC?? F???      00116         call    Delay
+00009C 0012           00117         return
+                      00118 
+00009E                00119 Delay                   ; Delay routine 4 instruction loop == 250ns         
+00009E 0E00           00120         movlw   0x00            ; W=0
+0000A0 06??           00121 lp1     decf    Delay_cnt_l,F   ; no carry when 0x00 -> 0xff
+0000A2 5A??           00122         subwfb  Delay_cnt_h,F   ; no carry when 0x00 -> 0xff
+0000A4 E2??           00123         bc      lp1             ; carry, then loop again
+0000A6 0012           00124         return                  ; carry reset so return
+                      00125         
+                      00126     end
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  4
 
 
 SYMBOL TABLE
@@ -246,7 +211,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  6
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  5
 
 
 SYMBOL TABLE
@@ -305,7 +270,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  7
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  6
 
 
 SYMBOL TABLE
@@ -364,7 +329,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  8
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  7
 
 
 SYMBOL TABLE
@@ -423,7 +388,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE  9
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  8
 
 
 SYMBOL TABLE
@@ -482,7 +447,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 10
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE  9
 
 
 SYMBOL TABLE
@@ -541,7 +506,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 11
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 10
 
 
 SYMBOL TABLE
@@ -600,7 +565,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 12
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 11
 
 
 SYMBOL TABLE
@@ -659,7 +624,7 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 13
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 12
 
 
 SYMBOL TABLE
@@ -712,13 +677,13 @@ DT1                               00000007
 DT2                               00000002
 D_A                               00000005
 D_NOT_A                           00000005
-Delay                             000000F2
+Delay                             0000009E
 Delay_cnt_h                       00000001
 Delay_cnt_l                       00000000
 Delay_cnt_ms                      00000002
-Delay_ms                          000000D0
-Delay_x4us                        000000DE
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 14
+Delay_ms                          0000007C
+Delay_x4us                        0000008A
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 13
 
 
 SYMBOL TABLE
@@ -777,7 +742,7 @@ FSR0                              00000000
 FSR0H                             00000FEA
 FSR0L                             00000FE9
 FSR1                              00000001
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 15
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 14
 
 
 SYMBOL TABLE
@@ -836,7 +801,7 @@ INT2F                             00000001
 INT2IE                            00000004
 INT2IF                            00000001
 INT2IP                            00000007
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 16
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 15
 
 
 SYMBOL TABLE
@@ -895,7 +860,7 @@ LATB0                             00000000
 LATB1                             00000001
 LATB2                             00000002
 LATB3                             00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 17
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 16
 
 
 SYMBOL TABLE
@@ -954,7 +919,7 @@ LATH3                             00000003
 LATH4                             00000004
 LATH5                             00000005
 LATH6                             00000006
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 18
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 17
 
 
 SYMBOL TABLE
@@ -1013,7 +978,7 @@ NOT_T7SYNC                        00000002
 NOT_TO                            00000003
 NOT_TX8                           00000006
 NOT_W                             00000002
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 19
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 18
 
 
 SYMBOL TABLE
@@ -1072,7 +1037,7 @@ P2RSEN                            00000007
 P3B                               00000004
 P3C                               00000003
 P3DC0                             00000000
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 20
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 19
 
 
 SYMBOL TABLE
@@ -1131,7 +1096,7 @@ PORTA                             00000F80
 PORTB                             00000F81
 PORTC                             00000F82
 PORTD                             00000F83
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 21
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 20
 
 
 SYMBOL TABLE
@@ -1190,7 +1155,7 @@ PSS3BD1                           00000001
 PSTR1CON                          00000F9C
 PSTR2CON                          00000F1B
 PSTR3CON                          00000F1A
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 22
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 21
 
 
 SYMBOL TABLE
@@ -1249,7 +1214,7 @@ RCON                              00000FD0
 RCREG                             00000FAE
 RCREG1                            00000FAE
 RCREG2                            00000F1D
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 23
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 22
 
 
 SYMBOL TABLE
@@ -1308,7 +1273,7 @@ RJ0                               00000000
 RJ1                               00000001
 RJ2                               00000002
 RJ3                               00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 24
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 23
 
 
 SYMBOL TABLE
@@ -1367,7 +1332,7 @@ SCL1                              00000003
 SCL2                              00000006
 SCS0                              00000000
 SCS1                              00000001
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 25
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 24
 
 
 SYMBOL TABLE
@@ -1404,11 +1369,11 @@ SPEN1                             00000007
 SPEN2                             00000007
 SPI1OD                            00000007
 SPI2OD                            00000000
-SPI_MasterInit                    000000BE
-SPI_MasterTransmit                000000C6
-SPI_writeCMD                      0000009A
-SPI_writeDATA                     000000AC
-SPI_writeREG                      00000090
+SPI_MasterInit                    0000006A
+SPI_MasterTransmit                00000072
+SPI_writeCMD                      00000046
+SPI_writeDATA                     00000058
+SPI_writeREG                      0000003C
 SREN                              00000005
 SREN1                             00000005
 SREN2                             00000005
@@ -1426,7 +1391,7 @@ SSP1MSK                           00000FC8
 SSP1STAT                          00000FC7
 SSP2ADD                           00000F69
 SSP2BUF                           00000F6A
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 26
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 25
 
 
 SYMBOL TABLE
@@ -1469,7 +1434,8 @@ SWDTEN                            00000000
 SYNC                              00000004
 SYNC1                             00000004
 SYNC2                             00000004
-Scroll                            00000000
+Scroll_1to2                       00000000
+Scroll_2to1                       00000000
 Setup                             00000000
 T08BIT                            00000006
 T0CKI                             00000004
@@ -1484,13 +1450,13 @@ T0PS2                             00000002
 T0SE                              00000004
 T10CKPS0                          00000000
 T10CKPS1                          00000001
-T10CON                            00000F33
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 27
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T10CON                            00000F33
 T10OUTPS0                         00000003
 T10OUTPS1                         00000004
 T10OUTPS2                         00000005
@@ -1543,13 +1509,13 @@ T4CON                             00000F6B
 T4OUTPS0                          00000003
 T4OUTPS1                          00000004
 T4OUTPS2                          00000005
-T4OUTPS3                          00000006
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 28
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T4OUTPS3                          00000006
 T5CKI                             00000001
 T5CKPS0                           00000004
 T5CKPS1                           00000005
@@ -1602,13 +1568,13 @@ TMR0                              00000FD6
 TMR0H                             00000FD7
 TMR0IE                            00000005
 TMR0IF                            00000002
-TMR0IP                            00000002
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 29
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR0IP                            00000002
 TMR0L                             00000FD6
 TMR0ON                            00000007
 TMR1                              00000FCE
@@ -1661,13 +1627,13 @@ TMR4                              00000F6D
 TMR4IE                            00000000
 TMR4IF                            00000000
 TMR4IP                            00000000
-TMR4MD                            00000004
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 30
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR4MD                            00000004
 TMR4ON                            00000002
 TMR5                              00000F7C
 TMR5CS0                           00000006
@@ -1720,13 +1686,13 @@ TRISA                             00000F92
 TRISA0                            00000000
 TRISA1                            00000001
 TRISA2                            00000002
-TRISA3                            00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 31
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISA3                            00000003
 TRISA4                            00000004
 TRISA5                            00000005
 TRISA6                            00000006
@@ -1779,13 +1745,13 @@ TRISG                             00000F98
 TRISG0                            00000000
 TRISG1                            00000001
 TRISG2                            00000002
-TRISG3                            00000003
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 32
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISG3                            00000003
 TRISG4                            00000004
 TRISH                             00000F99
 TRISH0                            00000000
@@ -1838,13 +1804,13 @@ TXIE                              00000004
 TXIF                              00000004
 TXIP                              00000004
 TXREG                             00000FAD
-TXREG1                            00000FAD
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 33
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TXREG1                            00000FAD
 TXREG2                            00000F1C
 TXSTA                             00000FAC
 TXSTA1                            00000FAC
@@ -1879,7 +1845,7 @@ WRERR                             00000003
 WRH                               00000003
 WRL                               00000002
 WUE                               00000001
-Wait_Transmit                     000000C8
+Wait_Transmit                     00000074
 Z                                 00000002
 _ABW_MM_3L                        000000FF
 _ABW_XM12_3L                      000000EF
@@ -1897,13 +1863,13 @@ _BORPWR_MEDIUM_2L                 000000BF
 _BORPWR_ZPBORMV_2L                000000FF
 _BORV_0_2L                        000000E7
 _BORV_1_2L                        000000EF
-_BORV_2_2L                        000000F7
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 34
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_BORV_2_2L                        000000F7
 _BORV_3_2L                        000000FF
 _BW_16_3L                         000000FF
 _BW_8_3L                          000000BF
@@ -1956,13 +1922,13 @@ _EBRT2_OFF_7L                     000000FF
 _EBRT2_ON_7L                      000000FB
 _EBRT3_OFF_7L                     000000FF
 _EBRT3_ON_7L                      000000F7
-_EBRT4_OFF_7L                     000000FF
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 35
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_EBRT4_OFF_7L                     000000FF
 _EBRT4_ON_7L                      000000EF
 _EBRT5_OFF_7L                     000000FF
 _EBRT5_ON_7L                      000000DF
@@ -2015,13 +1981,13 @@ _RETEN_ON_1L                      000000FF
 _RTCOSC_INTOSCREF_3L              000000FE
 _RTCOSC_SOSCREF_3L                000000FF
 _SOSCSEL_DIG_1L                   000000F7
-_SOSCSEL_HIGH_1L                  000000FF
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 36
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_SOSCSEL_HIGH_1L                  000000FF
 _SOSCSEL_LOW_1L                   000000EF
 _STVREN_OFF_4L                    000000FE
 _STVREN_ON_4L                     000000FF
@@ -2074,20 +2040,20 @@ _WRTC_OFF_6H                      000000FF
 _WRTC_ON_6H                       000000DF
 _WRTD_OFF_6H                      000000FF
 _WRTD_ON_6H                       0000007F
-_XINST_OFF_1L                     000000BF
-MPASM 5.81                          MAIN.ASM   11-13-2019  15:15:56         PAGE 37
+MPASM 5.81                          MAIN.ASM   11-13-2019  16:20:53         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-_main_008C                        0000008C
+_main_0038                        00000038
 input_cmd                         00000000
 input_data                        00000000
-lp1                               000000F4
-lp2                               000000D2
+lp1                               000000A0
+lp2                               0000007E
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
