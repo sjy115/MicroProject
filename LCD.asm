@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, Goal_setup
     extern Delay_ms, SPI_writeREG, Keypad_getKey, Keypad_output
 
 ;Data sheet definition (register array, pin, constant)
@@ -250,13 +250,13 @@
 #define	Box_y2	    4
 #define	Box_y3	    5
 #define	Box_colour  6
-    
+
+#define	active_layer 0	; To define active layer that must be scrolled 
+			;(high --> layer 2 active)
 
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	    res 1
 input_data	    res 1
-
-layer_cnt	    res 1
 	    
 Box		    res 1
 rect_x1_h	    res 1
@@ -353,7 +353,7 @@ Scroll
     btfss   Control, active_layer
     bra	    scroll2
     
-    movlw   .223
+    movlw   .203
     movwf   Scroll_d_l
     movlw   .1
     movwf   Scroll_d_h
@@ -377,12 +377,12 @@ ly1 call    LYEN1
     bra	    cly
 
 test_keypad
-    call    decode_             
+    call    Decode             
     call    Keypad_getKey
     
 ;temporary subroutine
 scroll2
-    movlw   .191
+    movlw   .151
     movwf   Scroll_d_l
     movlw   .3
     movwf   Scroll_d_h
@@ -833,7 +833,7 @@ LCD_SetScrollWindow
     ;// Vertical End Point of Scroll Window
     movlw   0x3E
     movwf   input_cmd
-    movlw   .223
+    movlw   .203
     movwf   input_data
     call    SPI_writeREG
     movlw   0x3F
@@ -873,5 +873,49 @@ LCD_ScrollY
     movff   Scroll_d_h, input_data
     call    SPI_writeREG
     return
+  
+Goal_setup
+    movlw   0b'00110000'
+    call    New_Box
+    movlw   0b'00111001'
+    call    New_Box
+    movlw   0b'00110010'
+    call    New_Box
+    movlw   0b'00111011'
+    call    New_Box
+    movlw   0b'00110100'
+    call    New_Box
+    movlw   0b'00111101'
+    call    New_Box
+    movlw   0b'00110110'
+    call    New_Box
+    movlw   0b'00111111'
+    call    New_Box
+    return
+
+decode    
+
+k1  movlw   0b'0000'
+    cpfseq  Keypad_output
+    bra	    k2
+    bra	    Score
+    
+k2  movlw   0b'0001'
+    cpfseq  Keypad_output
+    bra	    k3
+    bra	    Score
+    
+k3  movlw   0b'0010'
+    cpfseq  Keypad_output
+    bra	    Score
+    
+Score
+    movlw  .1
+    addwf  scr_cnt
+    return
+
+    
+    
+    
     end
 

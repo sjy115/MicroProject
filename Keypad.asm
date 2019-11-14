@@ -9,6 +9,8 @@ key	res 1
 
 	
 Keypad  code
+  ; 
+db  b'1111', b'1101', b'0111', b'0101', b'1110', b'1100', b'0110', b'0100', b'1011', b'1001', b'0011', b'0001', b'1010', b'1000', b'0010', b'0000'
 	
 Keypad_Setup
 	banksel	PADCFG1
@@ -16,6 +18,7 @@ Keypad_Setup
 	bcf	EECON1, CFGS	; point to Flash program memory  
 	bsf	EECON1, EEPGD 	; access Flash program memory
 	return
+	
 	
 Keypad_getKey
 	clrf	LATE
@@ -77,8 +80,13 @@ column3	movlw	b'01110000'
 	bra	key_fail
 	movlw	.12
 	addwf	key
-decode	movlw
 	
+decoder	tblrd*+			 
+	decfsz	key 
+	bra	decoder 
+	movff	TABLAT, Keypad_output
+	return
+
 key_fail
 	movlw	.0
 	movwf	Keypad_fail_flag

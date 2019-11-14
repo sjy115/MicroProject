@@ -1,7 +1,7 @@
 #include p18f87k22.inc
 
     global Delay_ms, SPI_writeREG
-    extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, Keypad_Setup
+    extern LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, Keypad_Setup, Goal_setup
 
 #define	RST		0
 #define	MOSI		4
@@ -47,6 +47,7 @@ Setup
     call    SPI_MasterInit
     call    LCD_Initialisation
     call    Keypad_Setup
+    call    Goal_setup
     ;UART
 
     call    New_Box
