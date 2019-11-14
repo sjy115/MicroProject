@@ -1,14 +1,10 @@
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  1
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00001 ; PIC18F87K22 Configuration Bit Settings
-                      00002 
-                      00003 ; Assembly source line config statements
-                      00004 
-                      00005 #include "p18f87k22.inc"
+                      00001 #include p18f87k22.inc
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
@@ -19,98 +15,254 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00006 
-                      00007 ; CONFIG1L
-                      00008   CONFIG  RETEN = ON            ; VREG Sleep Enable bit (Enabled)
-                      00009   CONFIG  INTOSCSEL = HIGH      ; LF-INTOSC Low-power Enable bit (LF-INTOSC in High-power mode during Sl
-                            eep)
-                      00010   CONFIG  SOSCSEL = DIG         ; SOSC Power Selection and mode Configuration bits (Digital IO selected)
-                      00011   CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-                      00012 
-                      00013 ; CONFIG1H
-                      00014   CONFIG  FOSC = HS1            ; Oscillator (HS oscillator (Medium power, 4 MHz - 16 MHz))
-                      00015   CONFIG  PLLCFG = ON           ; PLL x4 Enable bit (Enabled)
-                      00016   CONFIG  FCMEN = OFF           ; Fail-Safe Clock Monitor (Disabled)
-                      00017   CONFIG  IESO = OFF            ; Internal External Oscillator Switch Over Mode (Disabled)
-                      00018 
-                      00019 ; CONFIG2L
-                      00020   CONFIG  PWRTEN = OFF          ; Power Up Timer (Disabled)
-                      00021   CONFIG  BOREN = SBORDIS       ; Brown Out Detect (Enabled in hardware, SBOREN disabled)
-                      00022   CONFIG  BORV = 3              ; Brown-out Reset Voltage bits (1.8V)
-                      00023   CONFIG  BORPWR = ZPBORMV      ; BORMV Power level (ZPBORMV instead of BORMV is selected)
-                      00024 
-                      00025 ; CONFIG2H
-                      00026   CONFIG  WDTEN = SWDTDIS       ; Watchdog Timer (WDT enabled in hardware; SWDTEN bit disabled)
-                      00027   CONFIG  WDTPS = 1048576       ; Watchdog Postscaler (1:1048576)
-                      00028 
-                      00029 ; CONFIG3L
-                      00030   CONFIG  RTCOSC = SOSCREF      ; RTCC Clock Select (RTCC uses SOSC)
-                      00031   CONFIG  EASHFT = ON           ; External Address Shift bit (Address Shifting enabled)
-                      00032   CONFIG  ABW = MM              ; Address Bus Width Select bits (8-bit address bus)
-                      00033   CONFIG  BW = 16               ; Data Bus Width (16-bit external bus mode)
-                      00034   CONFIG  WAIT = OFF            ; External Bus Wait (Disabled)
-                      00035 
-                      00036 ; CONFIG3H
-                      00037   CONFIG  CCP2MX = PORTC        ; CCP2 Mux (RC1)
-                      00038   CONFIG  ECCPMX = PORTE        ; ECCP Mux (Enhanced CCP1/3 [P1B/P1C/P3B/P3C] muxed with RE6/RE5/RE4/RE3
-                            )
-                      00039   CONFIG  MSSPMSK = MSK7        ; MSSP address masking (7 Bit address masking mode)
-                      00040   CONFIG  MCLRE = ON            ; Master Clear Enable (MCLR Enabled, RG5 Disabled)
-                      00041 
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  2
+                      00002     
+  0000                00003     extern  New_Box, Scroll
+  0000                00004     global  Play
+                      00005     
+                      00006 GameData    code
+000000                00007 Play
+000000 0E00           00008     movlw   b'00000000'
+000002 EC?? F???      00009     call    New_Box
+000006 0E09           00010     movlw   b'00001001'
+000008 EC?? F???      00011     call    New_Box
+00000C 0E12           00012     movlw   b'00010010'
+00000E EC?? F???      00013     call    New_Box
+000012 0E1B           00014     movlw   b'00011011'
+000014 EC?? F???      00015     call    New_Box
+000018 0E24           00016     movlw   b'00100100'
+00001A EC?? F???      00017     call    New_Box
+00001E 0E2D           00018     movlw   b'00101101'
+000020 EC?? F???      00019     call    New_Box
+000024 0E36           00020     movlw   b'00110110'
+000026 EC?? F???      00021     call    New_Box
+00002A 0E3F           00022     movlw   b'00111111'
+00002C EC?? F???      00023     call    New_Box
+000030 EC?? F???      00024     call    Scroll
+                      00025     
+000034 0E47           00026     movlw   b'01000111'
+000036 EC?? F???      00027     call    New_Box
+00003A 0E4E           00028     movlw   b'01001110'
+00003C EC?? F???      00029     call    New_Box
+000040 0E55           00030     movlw   b'01010101'
+000042 EC?? F???      00031     call    New_Box
+000046 0E5C           00032     movlw   b'01011100'
+000048 EC?? F???      00033     call    New_Box
+00004C 0E63           00034     movlw   b'01100011'
+00004E EC?? F???      00035     call    New_Box
+000052 0E6A           00036     movlw   b'01101010'
+000054 EC?? F???      00037     call    New_Box
+000058 0E71           00038     movlw   b'01110001'
+00005A EC?? F???      00039     call    New_Box
+00005E 0E78           00040     movlw   b'01111000'
+000060 EC?? F???      00041     call    New_Box
+000064 EC?? F???      00042     call    Scroll
+                      00043     
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00042 ; CONFIG4L
-                      00043   CONFIG  STVREN = ON           ; Stack Overflow Reset (Enabled)
-                      00044   CONFIG  BBSIZ = BB2K          ; Boot Block Size (2K word Boot Block size)
-                      00045 
-                      00046 ; CONFIG5L
-                      00047   CONFIG  CP0 = OFF             ; Code Protect 00800-03FFF (Disabled)
-                      00048   CONFIG  CP1 = OFF             ; Code Protect 04000-07FFF (Disabled)
-                      00049   CONFIG  CP2 = OFF             ; Code Protect 08000-0BFFF (Disabled)
-                      00050   CONFIG  CP3 = OFF             ; Code Protect 0C000-0FFFF (Disabled)
-                      00051   CONFIG  CP4 = OFF             ; Code Protect 10000-13FFF (Disabled)
-                      00052   CONFIG  CP5 = OFF             ; Code Protect 14000-17FFF (Disabled)
-                      00053   CONFIG  CP6 = OFF             ; Code Protect 18000-1BFFF (Disabled)
-                      00054   CONFIG  CP7 = OFF             ; Code Protect 1C000-1FFFF (Disabled)
-                      00055 
-                      00056 ; CONFIG5H
-                      00057   CONFIG  CPB = OFF             ; Code Protect Boot (Disabled)
-                      00058   CONFIG  CPD = OFF             ; Data EE Read Protect (Disabled)
-                      00059 
-                      00060 ; CONFIG6L
-                      00061   CONFIG  WRT0 = OFF            ; Table Write Protect 00800-03FFF (Disabled)
-                      00062   CONFIG  WRT1 = OFF            ; Table Write Protect 04000-07FFF (Disabled)
-                      00063   CONFIG  WRT2 = OFF            ; Table Write Protect 08000-0BFFF (Disabled)
-                      00064   CONFIG  WRT3 = OFF            ; Table Write Protect 0C000-0FFFF (Disabled)
-                      00065   CONFIG  WRT4 = OFF            ; Table Write Protect 10000-13FFF (Disabled)
-                      00066   CONFIG  WRT5 = OFF            ; Table Write Protect 14000-17FFF (Disabled)
-                      00067   CONFIG  WRT6 = OFF            ; Table Write Protect 18000-1BFFF (Disabled)
-                      00068   CONFIG  WRT7 = OFF            ; Table Write Protect 1C000-1FFFF (Disabled)
-                      00069 
-                      00070 ; CONFIG6H
-                      00071   CONFIG  WRTC = OFF            ; Config. Write Protect (Disabled)
-                      00072   CONFIG  WRTB = OFF            ; Table Write Protect Boot (Disabled)
-                      00073   CONFIG  WRTD = OFF            ; Data EE Write Protect (Disabled)
-                      00074 
-                      00075 ; CONFIG7L
-                      00076   CONFIG  EBRT0 = OFF           ; Table Read Protect 00800-03FFF (Disabled)
-                      00077   CONFIG  EBRT1 = OFF           ; Table Read Protect 04000-07FFF (Disabled)
-                      00078   CONFIG  EBRT2 = OFF           ; Table Read Protect 08000-0BFFF (Disabled)
-                      00079   CONFIG  EBRT3 = OFF           ; Table Read Protect 0C000-0FFFF (Disabled)
-                      00080   CONFIG  EBRT4 = OFF           ; Table Read Protect 10000-13FFF (Disabled)
-                      00081   CONFIG  EBRT5 = OFF           ; Table Read Protect 14000-17FFF (Disabled)
-                      00082   CONFIG  EBRT6 = OFF           ; Table Read Protect 18000-1BFFF (Disabled)
-                      00083   CONFIG  EBRT7 = OFF           ; Table Read Protect 1C000-1FFFF (Disabled)
-                      00084 
-                      00085 ; CONFIG7H
-                      00086   CONFIG  EBRTB = OFF           ; Table Read Protect Boot (Disabled)
-                      00087 
-                      00088   end
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  3
+000068 0E00           00044     movlw   b'00000000'
+00006A EC?? F???      00045     call    New_Box
+00006E 0E09           00046     movlw   b'00001001'
+000070 EC?? F???      00047     call    New_Box
+000074 0E12           00048     movlw   b'00010010'
+000076 EC?? F???      00049     call    New_Box
+00007A 0E1B           00050     movlw   b'00011011'
+00007C EC?? F???      00051     call    New_Box
+000080 0E24           00052     movlw   b'00100100'
+000082 EC?? F???      00053     call    New_Box
+000086 0E2D           00054     movlw   b'00101101'
+000088 EC?? F???      00055     call    New_Box
+00008C 0E36           00056     movlw   b'00110110'
+00008E EC?? F???      00057     call    New_Box
+000092 0E3F           00058     movlw   b'00111111'
+000094 EC?? F???      00059     call    New_Box
+000098 EC?? F???      00060     call    Scroll
+                      00061     
+00009C 0E47           00062     movlw   b'01000111'
+00009E EC?? F???      00063     call    New_Box
+0000A2 0E4E           00064     movlw   b'01001110'
+0000A4 EC?? F???      00065     call    New_Box
+0000A8 0E55           00066     movlw   b'01010101'
+0000AA EC?? F???      00067     call    New_Box
+0000AE 0E5C           00068     movlw   b'01011100'
+0000B0 EC?? F???      00069     call    New_Box
+0000B4 0E63           00070     movlw   b'01100011'
+0000B6 EC?? F???      00071     call    New_Box
+0000BA 0E6A           00072     movlw   b'01101010'
+0000BC EC?? F???      00073     call    New_Box
+0000C0 0E71           00074     movlw   b'01110001'
+0000C2 EC?? F???      00075     call    New_Box
+0000C6 0E78           00076     movlw   b'01111000'
+0000C8 EC?? F???      00077     call    New_Box
+0000CC EC?? F???      00078     call    Scroll
+                      00079     ;
+0000D0 0E00           00080     movlw   b'00000000'
+0000D2 EC?? F???      00081     call    New_Box
+0000D6 0E09           00082     movlw   b'00001001'
+0000D8 EC?? F???      00083     call    New_Box
+0000DC 0E12           00084     movlw   b'00010010'
+0000DE EC?? F???      00085     call    New_Box
+0000E2 0E1B           00086     movlw   b'00011011'
+0000E4 EC?? F???      00087     call    New_Box
+0000E8 0E24           00088     movlw   b'00100100'
+0000EA EC?? F???      00089     call    New_Box
+0000EE 0E2D           00090     movlw   b'00101101'
+0000F0 EC?? F???      00091     call    New_Box
+0000F4 0E36           00092     movlw   b'00110110'
+0000F6 EC?? F???      00093     call    New_Box
+0000FA 0E3F           00094     movlw   b'00111111'
+0000FC EC?? F???      00095     call    New_Box
+000100 EC?? F???      00096     call    Scroll
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00097     
+000104 0E47           00098     movlw   b'01000111'
+000106 EC?? F???      00099     call    New_Box
+00010A 0E4E           00100     movlw   b'01001110'
+00010C EC?? F???      00101     call    New_Box
+000110 0E55           00102     movlw   b'01010101'
+000112 EC?? F???      00103     call    New_Box
+000116 0E5C           00104     movlw   b'01011100'
+000118 EC?? F???      00105     call    New_Box
+00011C 0E63           00106     movlw   b'01100011'
+00011E EC?? F???      00107     call    New_Box
+000122 0E6A           00108     movlw   b'01101010'
+000124 EC?? F???      00109     call    New_Box
+000128 0E71           00110     movlw   b'01110001'
+00012A EC?? F???      00111     call    New_Box
+00012E 0E78           00112     movlw   b'01111000'
+000130 EC?? F???      00113     call    New_Box
+000134 EC?? F???      00114     call    Scroll
+                      00115     
+000138 0E00           00116     movlw   b'00000000'
+00013A EC?? F???      00117     call    New_Box
+00013E 0E09           00118     movlw   b'00001001'
+000140 EC?? F???      00119     call    New_Box
+000144 0E12           00120     movlw   b'00010010'
+000146 EC?? F???      00121     call    New_Box
+00014A 0E1B           00122     movlw   b'00011011'
+00014C EC?? F???      00123     call    New_Box
+000150 0E24           00124     movlw   b'00100100'
+000152 EC?? F???      00125     call    New_Box
+000156 0E2D           00126     movlw   b'00101101'
+000158 EC?? F???      00127     call    New_Box
+00015C 0E36           00128     movlw   b'00110110'
+00015E EC?? F???      00129     call    New_Box
+000162 0E3F           00130     movlw   b'00111111'
+000164 EC?? F???      00131     call    New_Box
+000168 EC?? F???      00132     call    Scroll
+                      00133     
+00016C 0E47           00134     movlw   b'01000111'
+00016E EC?? F???      00135     call    New_Box
+000172 0E4E           00136     movlw   b'01001110'
+000174 EC?? F???      00137     call    New_Box
+000178 0E55           00138     movlw   b'01010101'
+00017A EC?? F???      00139     call    New_Box
+00017E 0E5C           00140     movlw   b'01011100'
+000180 EC?? F???      00141     call    New_Box
+000184 0E63           00142     movlw   b'01100011'
+000186 EC?? F???      00143     call    New_Box
+00018A 0E6A           00144     movlw   b'01101010'
+00018C EC?? F???      00145     call    New_Box
+000190 0E71           00146     movlw   b'01110001'
+000192 EC?? F???      00147     call    New_Box
+000196 0E78           00148     movlw   b'01111000'
+000198 EC?? F???      00149     call    New_Box
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00019C EC?? F???      00150     call    Scroll
+                      00151     ;
+0001A0 0E00           00152     movlw   b'00000000'
+0001A2 EC?? F???      00153     call    New_Box
+0001A6 0E09           00154     movlw   b'00001001'
+0001A8 EC?? F???      00155     call    New_Box
+0001AC 0E12           00156     movlw   b'00010010'
+0001AE EC?? F???      00157     call    New_Box
+0001B2 0E1B           00158     movlw   b'00011011'
+0001B4 EC?? F???      00159     call    New_Box
+0001B8 0E24           00160     movlw   b'00100100'
+0001BA EC?? F???      00161     call    New_Box
+0001BE 0E2D           00162     movlw   b'00101101'
+0001C0 EC?? F???      00163     call    New_Box
+0001C4 0E36           00164     movlw   b'00110110'
+0001C6 EC?? F???      00165     call    New_Box
+0001CA 0E3F           00166     movlw   b'00111111'
+0001CC EC?? F???      00167     call    New_Box
+0001D0 EC?? F???      00168     call    Scroll
+                      00169     
+0001D4 0E47           00170     movlw   b'01000111'
+0001D6 EC?? F???      00171     call    New_Box
+0001DA 0E4E           00172     movlw   b'01001110'
+0001DC EC?? F???      00173     call    New_Box
+0001E0 0E55           00174     movlw   b'01010101'
+0001E2 EC?? F???      00175     call    New_Box
+0001E6 0E5C           00176     movlw   b'01011100'
+0001E8 EC?? F???      00177     call    New_Box
+0001EC 0E63           00178     movlw   b'01100011'
+0001EE EC?? F???      00179     call    New_Box
+0001F2 0E6A           00180     movlw   b'01101010'
+0001F4 EC?? F???      00181     call    New_Box
+0001F8 0E71           00182     movlw   b'01110001'
+0001FA EC?? F???      00183     call    New_Box
+0001FE 0E78           00184     movlw   b'01111000'
+000200 EC?? F???      00185     call    New_Box
+000204 EC?? F???      00186     call    Scroll
+                      00187     
+000208 0E00           00188     movlw   b'00000000'
+00020A EC?? F???      00189     call    New_Box
+00020E 0E09           00190     movlw   b'00001001'
+000210 EC?? F???      00191     call    New_Box
+000214 0E12           00192     movlw   b'00010010'
+000216 EC?? F???      00193     call    New_Box
+00021A 0E1B           00194     movlw   b'00011011'
+00021C EC?? F???      00195     call    New_Box
+000220 0E24           00196     movlw   b'00100100'
+000222 EC?? F???      00197     call    New_Box
+000226 0E2D           00198     movlw   b'00101101'
+000228 EC?? F???      00199     call    New_Box
+00022C 0E36           00200     movlw   b'00110110'
+00022E EC?? F???      00201     call    New_Box
+000232 0E3F           00202     movlw   b'00111111'
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000234 EC?? F???      00203     call    New_Box
+000238 EC?? F???      00204     call    Scroll
+                      00205     
+00023C 0E47           00206     movlw   b'01000111'
+00023E EC?? F???      00207     call    New_Box
+000242 0E4E           00208     movlw   b'01001110'
+000244 EC?? F???      00209     call    New_Box
+000248 0E55           00210     movlw   b'01010101'
+00024A EC?? F???      00211     call    New_Box
+00024E 0E5C           00212     movlw   b'01011100'
+000250 EC?? F???      00213     call    New_Box
+000254 0E63           00214     movlw   b'01100011'
+000256 EC?? F???      00215     call    New_Box
+00025A 0E6A           00216     movlw   b'01101010'
+00025C EC?? F???      00217     call    New_Box
+000260 0E71           00218     movlw   b'01110001'
+000262 EC?? F???      00219     call    New_Box
+000266 0E78           00220     movlw   b'01111000'
+000268 EC?? F???      00221     call    New_Box
+00026C EC?? F???      00222     call    Scroll
+000270 0012           00223     return
+                      00224     end
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  6
 
 
 SYMBOL TABLE
@@ -169,7 +321,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  4
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  7
 
 
 SYMBOL TABLE
@@ -228,7 +380,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  5
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  8
 
 
 SYMBOL TABLE
@@ -287,7 +439,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  6
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE  9
 
 
 SYMBOL TABLE
@@ -346,7 +498,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  7
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 10
 
 
 SYMBOL TABLE
@@ -405,7 +557,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  8
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 11
 
 
 SYMBOL TABLE
@@ -464,7 +616,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  9
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 12
 
 
 SYMBOL TABLE
@@ -523,7 +675,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 10
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 13
 
 
 SYMBOL TABLE
@@ -582,7 +734,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 11
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 14
 
 
 SYMBOL TABLE
@@ -641,7 +793,7 @@ ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
 ECCP1CON                          00000FBB
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 12
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 15
 
 
 SYMBOL TABLE
@@ -700,7 +852,7 @@ FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
 GIE                               00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 13
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 16
 
 
 SYMBOL TABLE
@@ -759,7 +911,7 @@ INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
 INT3IP                            00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 14
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 17
 
 
 SYMBOL TABLE
@@ -818,7 +970,7 @@ LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
 LATC1                             00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 15
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 18
 
 
 SYMBOL TABLE
@@ -877,7 +1029,7 @@ LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
 LATJ4                             00000004
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 16
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 19
 
 
 SYMBOL TABLE
@@ -928,6 +1080,7 @@ NOT_TX8                           00000006
 NOT_W                             00000002
 NOT_WR                            00000001
 NOT_WRITE                         00000002
+New_Box                           00000000
 OBF                               00000006
 ODCON1                            00000F29
 ODCON2                            00000F28
@@ -935,13 +1088,13 @@ ODCON3                            00000F27
 OE                                00000001
 OERR                              00000001
 OERR1                             00000001
-OERR2                             00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 17
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
 OSCCON                            00000FD3
@@ -994,13 +1147,13 @@ P3M0                              00000006
 P3M1                              00000007
 P3RSEN                            00000007
 PA3                               00000000
-PADCFG1                           00000F53
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 18
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
 PC                                00000FF9
@@ -1053,13 +1206,13 @@ POSTDEC1                          00000FE5
 POSTDEC2                          00000FDD
 POSTINC0                          00000FEE
 POSTINC1                          00000FE6
-POSTINC2                          00000FDE
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 19
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
 PR2                               00000FCB
@@ -1104,6 +1257,7 @@ PSTR2CON                          00000F1B
 PSTR3CON                          00000F1A
 PWM1CON                           00000FBE
 PWM2CON                           00000F51
+Play                              00000000
 R                                 00000002
 RA0                               00000000
 RA1                               00000001
@@ -1111,14 +1265,14 @@ RA2                               00000002
 RA3                               00000003
 RA4                               00000004
 RA5                               00000005
-RA6                               00000006
-RA7                               00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 20
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA6                               00000006
+RA7                               00000007
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1170,14 +1324,14 @@ RD4                               00000004
 RD5                               00000005
 RD6                               00000006
 RD7                               00000007
-RDPU                              00000007
-RE0                               00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 21
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RDPU                              00000007
+RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
@@ -1229,14 +1383,14 @@ ROON                              00000007
 ROSEL                             00000004
 ROSSLP                            00000005
 RSEN                              00000001
-RTCC                              00000004
-RTCCAL                            00000F5E
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 22
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RTCC                              00000004
+RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
 RTCCIF                            00000000
@@ -1288,14 +1442,14 @@ SOSCEN                            00000003
 SOSCGO                            00000003
 SOSCI                             00000001
 SOSCO                             00000000
-SOSCRUN                           00000006
-SP0                               00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 23
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SOSCRUN                           00000006
+SP0                               00000000
 SP1                               00000001
 SP2                               00000002
 SP3                               00000003
@@ -1347,14 +1501,14 @@ SSPM0                             00000000
 SSPM1                             00000001
 SSPM2                             00000002
 SSPM3                             00000003
-SSPOV                             00000006
-SSPSTAT                           00000FC7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 24
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPOV                             00000006
+SSPSTAT                           00000FC7
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
@@ -1370,6 +1524,7 @@ SWDTEN                            00000000
 SYNC                              00000004
 SYNC1                             00000004
 SYNC2                             00000004
+Scroll                            00000000
 T08BIT                            00000006
 T0CKI                             00000004
 T0CON                             00000FD5
@@ -1405,15 +1560,15 @@ T1GGO                             00000003
 T1GGO_NOT_T1DONE                  00000003
 T1GPOL                            00000006
 T1GSPM                            00000004
-T1GSS0                            00000000
-T1GSS1                            00000001
-T1GTM                             00000005
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 25
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GSS0                            00000000
+T1GSS1                            00000001
+T1GTM                             00000005
 T1GVAL                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
@@ -1464,15 +1619,15 @@ T6OUTPS0                          00000003
 T6OUTPS1                          00000004
 T6OUTPS2                          00000005
 T6OUTPS3                          00000006
-T7CKI                             00000004
-T7CKPS0                           00000004
-T7CKPS1                           00000005
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 26
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T7CKI                             00000004
+T7CKPS0                           00000004
+T7CKPS1                           00000005
 T7CON                             00000F3D
 T7G                               00000001
 T7GCON                            00000F3C
@@ -1523,15 +1678,15 @@ TMR1GE                            00000007
 TMR1GIE                           00000002
 TMR1GIF                           00000002
 TMR1GIP                           00000002
-TMR1H                             00000FCF
-TMR1IE                            00000000
-TMR1IF                            00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 27
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1H                             00000FCF
+TMR1IE                            00000000
+TMR1IF                            00000000
 TMR1IP                            00000000
 TMR1L                             00000FCE
 TMR1MD                            00000001
@@ -1582,15 +1737,15 @@ TMR6IF                            00000002
 TMR6IP                            00000002
 TMR6MD                            00000004
 TMR6ON                            00000002
-TMR7                              00000F3E
-TMR7CS0                           00000006
-TMR7CS1                           00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 28
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR7                              00000F3E
+TMR7CS0                           00000006
+TMR7CS1                           00000007
 TMR7GE                            00000007
 TMR7GIE                           00000007
 TMR7GIF                           00000007
@@ -1641,15 +1796,15 @@ TRISC3                            00000003
 TRISC4                            00000004
 TRISC5                            00000005
 TRISC6                            00000006
-TRISC7                            00000007
-TRISD                             00000F95
-TRISD0                            00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 29
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC7                            00000007
+TRISD                             00000F95
+TRISD0                            00000000
 TRISD1                            00000001
 TRISD2                            00000002
 TRISD3                            00000003
@@ -1700,15 +1855,15 @@ TRISJ6                            00000006
 TRISJ7                            00000007
 TRMT                              00000001
 TRMT1                             00000001
-TRMT2                             00000001
-TUN0                              00000000
-TUN1                              00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 30
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRMT2                             00000001
+TUN0                              00000000
+TUN1                              00000001
 TUN2                              00000002
 TUN3                              00000003
 TUN4                              00000004
@@ -1759,15 +1914,15 @@ VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
 W                                 00000000
-WAIT0                             00000004
-WAIT1                             00000005
-WCOL                              00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 31
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+WAIT0                             00000004
+WAIT1                             00000005
+WCOL                              00000007
 WDTCON                            00000FD1
 WM0                               00000000
 WM1                               00000001
@@ -1818,15 +1973,15 @@ _CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
 _CP1_OFF_5L                       000000FF
 _CP1_ON_5L                        000000FD
-_CP2_OFF_5L                       000000FF
-_CP2_ON_5L                        000000FB
-_CP3_OFF_5L                       000000FF
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 32
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CP2_OFF_5L                       000000FF
+_CP2_ON_5L                        000000FB
+_CP3_OFF_5L                       000000FF
 _CP3_ON_5L                        000000F7
 _CP4_OFF_5L                       000000FF
 _CP4_ON_5L                        000000EF
@@ -1877,15 +2032,15 @@ _FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
 _FOSC_HS2_1H                      000000F2
 _FOSC_INTIO1_1H                   000000F9
-_FOSC_INTIO2_1H                   000000F8
-_FOSC_LP_1H                       000000F0
-_FOSC_RCIO_1H                     000000F7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 33
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_INTIO2_1H                   000000F8
+_FOSC_LP_1H                       000000F0
+_FOSC_RCIO_1H                     000000F7
 _FOSC_RC_1H                       000000F6
 _FOSC_XT_1H                       000000F1
 _IDLOC0                           00200000
@@ -1936,15 +2091,15 @@ _WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
 _WDTPS_32768_2H                   000000BF
 _WDTPS_32_2H                      00000097
-_WDTPS_4096_2H                    000000B3
-_WDTPS_4_2H                       0000008B
-_WDTPS_512_2H                     000000A7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 34
+MPASM 5.81                      GAMEDATA.ASM   11-14-2019  16:02:24         PAGE 37
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_4096_2H                    000000B3
+_WDTPS_4_2H                       0000008B
+_WDTPS_512_2H                     000000A7
 _WDTPS_524288_2H                  000000CF
 _WDTPS_64_2H                      0000009B
 _WDTPS_65536_2H                   000000C3

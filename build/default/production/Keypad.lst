@@ -1,14 +1,10 @@
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  1
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00001 ; PIC18F87K22 Configuration Bit Settings
-                      00002 
-                      00003 ; Assembly source line config statements
-                      00004 
-                      00005 #include "p18f87k22.inc"
+                      00001     #include p18f87k22.inc
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
@@ -19,98 +15,115 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00006 
-                      00007 ; CONFIG1L
-                      00008   CONFIG  RETEN = ON            ; VREG Sleep Enable bit (Enabled)
-                      00009   CONFIG  INTOSCSEL = HIGH      ; LF-INTOSC Low-power Enable bit (LF-INTOSC in High-power mode during Sl
-                            eep)
-                      00010   CONFIG  SOSCSEL = DIG         ; SOSC Power Selection and mode Configuration bits (Digital IO selected)
-                      00011   CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-                      00012 
-                      00013 ; CONFIG1H
-                      00014   CONFIG  FOSC = HS1            ; Oscillator (HS oscillator (Medium power, 4 MHz - 16 MHz))
-                      00015   CONFIG  PLLCFG = ON           ; PLL x4 Enable bit (Enabled)
-                      00016   CONFIG  FCMEN = OFF           ; Fail-Safe Clock Monitor (Disabled)
-                      00017   CONFIG  IESO = OFF            ; Internal External Oscillator Switch Over Mode (Disabled)
-                      00018 
-                      00019 ; CONFIG2L
-                      00020   CONFIG  PWRTEN = OFF          ; Power Up Timer (Disabled)
-                      00021   CONFIG  BOREN = SBORDIS       ; Brown Out Detect (Enabled in hardware, SBOREN disabled)
-                      00022   CONFIG  BORV = 3              ; Brown-out Reset Voltage bits (1.8V)
-                      00023   CONFIG  BORPWR = ZPBORMV      ; BORMV Power level (ZPBORMV instead of BORMV is selected)
-                      00024 
-                      00025 ; CONFIG2H
-                      00026   CONFIG  WDTEN = SWDTDIS       ; Watchdog Timer (WDT enabled in hardware; SWDTEN bit disabled)
-                      00027   CONFIG  WDTPS = 1048576       ; Watchdog Postscaler (1:1048576)
-                      00028 
-                      00029 ; CONFIG3L
-                      00030   CONFIG  RTCOSC = SOSCREF      ; RTCC Clock Select (RTCC uses SOSC)
-                      00031   CONFIG  EASHFT = ON           ; External Address Shift bit (Address Shifting enabled)
-                      00032   CONFIG  ABW = MM              ; Address Bus Width Select bits (8-bit address bus)
-                      00033   CONFIG  BW = 16               ; Data Bus Width (16-bit external bus mode)
-                      00034   CONFIG  WAIT = OFF            ; External Bus Wait (Disabled)
-                      00035 
-                      00036 ; CONFIG3H
-                      00037   CONFIG  CCP2MX = PORTC        ; CCP2 Mux (RC1)
-                      00038   CONFIG  ECCPMX = PORTE        ; ECCP Mux (Enhanced CCP1/3 [P1B/P1C/P3B/P3C] muxed with RE6/RE5/RE4/RE3
-                            )
-                      00039   CONFIG  MSSPMSK = MSK7        ; MSSP address masking (7 Bit address masking mode)
-                      00040   CONFIG  MCLRE = ON            ; Master Clear Enable (MCLR Enabled, RG5 Disabled)
-                      00041 
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  2
+                      00002     
+  0000                00003     global Keypad_Setup, Keypad_getKey, Keypad_output
+  0000                00004     extern Delay_ms
+                      00005 
+                      00006     
+                      00007 acs0    udata_acs   ; reserve data space in access ram
+000000                00008 key     res 1
+000001                00009 Keypad_output res 1
+                      00010         
+                      00011 Keypad  code
+                      00012   ; 
+000000 0D0F 0507 0C0E 00013     db  b'1111', b'1101', b'0111', b'0101', b'1110', b'1100', b'0110', b'0100', b'1011', b'1001', b'0011
+                            ', b'0001', b'1010', b'1000', b'0010', b'0000'
+       0406 090B 0103 
+       080A 0002 
+                      00014         
+000010                00015 Keypad_Setup
+000010 010F           00016     banksel     PADCFG1
+000012 8D53           00017     bsf         PADCFG1,REPU,BANKED
+000014 9C7F           00018     bcf         EECON1, CFGS            ; point to Flash program memory  
+000016 8E7F           00019     bsf         EECON1, EEPGD           ; access Flash program memory
+000018 0012           00020     return
+                      00021         
+                      00022         
+00001A                00023 Keypad_getKey
+00001A 6A8D           00024         clrf    LATE
+00001C 0E0F           00025         movlw   0x0F
+00001E 6E96           00026         movwf   TRISE
+000020 0E64           00027         movlw   .100
+000022 EC?? F???      00028         call    Delay_ms
+                      00029         ;row0
+000026 0E0E           00030         movlw   b'1110'
+000028 6284           00031         cpfseq  PORTE
+00002A D???           00032         bra     row1
+00002C 0E01           00033         movlw   .1
+00002E 6E??           00034         movwf   key
+000030 D???           00035         bra     get_column
+000032 0E0D           00036 row1    movlw   b'1101'
+000034 6284           00037         cpfseq  PORTE
+000036 D???           00038         bra     row2
+000038 0E02           00039         movlw   .2
+00003A 6E??           00040         movwf   key
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00042 ; CONFIG4L
-                      00043   CONFIG  STVREN = ON           ; Stack Overflow Reset (Enabled)
-                      00044   CONFIG  BBSIZ = BB2K          ; Boot Block Size (2K word Boot Block size)
-                      00045 
-                      00046 ; CONFIG5L
-                      00047   CONFIG  CP0 = OFF             ; Code Protect 00800-03FFF (Disabled)
-                      00048   CONFIG  CP1 = OFF             ; Code Protect 04000-07FFF (Disabled)
-                      00049   CONFIG  CP2 = OFF             ; Code Protect 08000-0BFFF (Disabled)
-                      00050   CONFIG  CP3 = OFF             ; Code Protect 0C000-0FFFF (Disabled)
-                      00051   CONFIG  CP4 = OFF             ; Code Protect 10000-13FFF (Disabled)
-                      00052   CONFIG  CP5 = OFF             ; Code Protect 14000-17FFF (Disabled)
-                      00053   CONFIG  CP6 = OFF             ; Code Protect 18000-1BFFF (Disabled)
-                      00054   CONFIG  CP7 = OFF             ; Code Protect 1C000-1FFFF (Disabled)
-                      00055 
-                      00056 ; CONFIG5H
-                      00057   CONFIG  CPB = OFF             ; Code Protect Boot (Disabled)
-                      00058   CONFIG  CPD = OFF             ; Data EE Read Protect (Disabled)
-                      00059 
-                      00060 ; CONFIG6L
-                      00061   CONFIG  WRT0 = OFF            ; Table Write Protect 00800-03FFF (Disabled)
-                      00062   CONFIG  WRT1 = OFF            ; Table Write Protect 04000-07FFF (Disabled)
-                      00063   CONFIG  WRT2 = OFF            ; Table Write Protect 08000-0BFFF (Disabled)
-                      00064   CONFIG  WRT3 = OFF            ; Table Write Protect 0C000-0FFFF (Disabled)
-                      00065   CONFIG  WRT4 = OFF            ; Table Write Protect 10000-13FFF (Disabled)
-                      00066   CONFIG  WRT5 = OFF            ; Table Write Protect 14000-17FFF (Disabled)
-                      00067   CONFIG  WRT6 = OFF            ; Table Write Protect 18000-1BFFF (Disabled)
-                      00068   CONFIG  WRT7 = OFF            ; Table Write Protect 1C000-1FFFF (Disabled)
-                      00069 
-                      00070 ; CONFIG6H
-                      00071   CONFIG  WRTC = OFF            ; Config. Write Protect (Disabled)
-                      00072   CONFIG  WRTB = OFF            ; Table Write Protect Boot (Disabled)
-                      00073   CONFIG  WRTD = OFF            ; Data EE Write Protect (Disabled)
-                      00074 
-                      00075 ; CONFIG7L
-                      00076   CONFIG  EBRT0 = OFF           ; Table Read Protect 00800-03FFF (Disabled)
-                      00077   CONFIG  EBRT1 = OFF           ; Table Read Protect 04000-07FFF (Disabled)
-                      00078   CONFIG  EBRT2 = OFF           ; Table Read Protect 08000-0BFFF (Disabled)
-                      00079   CONFIG  EBRT3 = OFF           ; Table Read Protect 0C000-0FFFF (Disabled)
-                      00080   CONFIG  EBRT4 = OFF           ; Table Read Protect 10000-13FFF (Disabled)
-                      00081   CONFIG  EBRT5 = OFF           ; Table Read Protect 14000-17FFF (Disabled)
-                      00082   CONFIG  EBRT6 = OFF           ; Table Read Protect 18000-1BFFF (Disabled)
-                      00083   CONFIG  EBRT7 = OFF           ; Table Read Protect 1C000-1FFFF (Disabled)
-                      00084 
-                      00085 ; CONFIG7H
-                      00086   CONFIG  EBRTB = OFF           ; Table Read Protect Boot (Disabled)
-                      00087 
-                      00088   end
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  3
+00003C D???           00041         bra     get_column
+00003E 0E0B           00042 row2    movlw   b'1011'
+000040 6284           00043         cpfseq  PORTE
+000042 D???           00044         bra     row3
+000044 0E03           00045         movlw   .3
+000046 6E??           00046         movwf   key
+000048 D???           00047         bra     get_column
+00004A 0E07           00048 row3    movlw   b'0111'
+00004C 6284           00049         cpfseq  PORTE
+00004E D???           00050         bra     key_fail
+000050 0E04           00051         movlw   .4
+000052 6E??           00052         movwf   key
+000054 D???           00053         bra     get_column
+000056                00054 get_column
+000056 6A8D           00055         clrf    LATE
+000058 0EF0           00056         movlw   0xF0
+00005A 6E96           00057         movwf   TRISE
+00005C 0E64           00058         movlw   .100
+00005E EC?? F???      00059         call    Delay_ms
+000062 0EE0           00060 column0 movlw   b'11100000'
+000064 6284           00061         cpfseq  PORTE
+000066 D???           00062         bra     column1
+000068 0E00           00063         movlw   .0
+00006A 26??           00064         addwf   key
+00006C D???           00065         bra     decoder
+00006E 0ED0           00066 column1 movlw   b'11010000'
+000070 6284           00067         cpfseq  PORTE
+000072 D???           00068         bra     column2
+000074 0E04           00069         movlw   .4
+000076 26??           00070         addwf   key
+000078 D???           00071         bra     decoder
+00007A 0EB0           00072 column2 movlw   b'10110000'
+00007C 6284           00073         cpfseq  PORTE
+00007E D???           00074         bra     column3
+000080 0E08           00075         movlw   .8
+000082 26??           00076         addwf   key
+000084 D???           00077         bra     decoder
+000086 0E70           00078 column3 movlw   b'01110000'
+000088 6284           00079         cpfseq  PORTE
+00008A D???           00080         bra     key_fail
+00008C 0E0C           00081         movlw   .12
+00008E 26??           00082         addwf   key
+                      00083         
+000090 0009           00084 decoder tblrd*+                  
+000092 2E??           00085         decfsz  key 
+000094 D???           00086         bra     decoder 
+000096 CFF5 F???      00087         movff   TABLAT, Keypad_output
+00009A 0012           00088         return
+                      00089 
+00009C                00090 key_fail
+00009C 0E00           00091         movlw   .0
+                      00092         ;movwf  Keypad_fail_flag
+00009E 0012           00093         return
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00094         end
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  4
 
 
 SYMBOL TABLE
@@ -169,7 +182,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  4
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  5
 
 
 SYMBOL TABLE
@@ -228,7 +241,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  5
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  6
 
 
 SYMBOL TABLE
@@ -287,7 +300,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  6
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  7
 
 
 SYMBOL TABLE
@@ -346,7 +359,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  7
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  8
 
 
 SYMBOL TABLE
@@ -405,7 +418,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  8
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE  9
 
 
 SYMBOL TABLE
@@ -464,7 +477,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE  9
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 10
 
 
 SYMBOL TABLE
@@ -523,7 +536,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 10
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 11
 
 
 SYMBOL TABLE
@@ -582,7 +595,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 11
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 12
 
 
 SYMBOL TABLE
@@ -634,19 +647,20 @@ DT1                               00000007
 DT2                               00000002
 D_A                               00000005
 D_NOT_A                           00000005
+Delay_ms                          00000000
 EBDIS                             00000007
 ECCP1AS                           00000FBF
 ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
-ECCP1CON                          00000FBB
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 12
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ECCP1CON                          00000FBB
 ECCP1DEL                          00000FBE
 ECCP2AS                           00000F52
 ECCP2AS0                          00000004
@@ -699,13 +713,13 @@ FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-GIE                               00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 13
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+GIE                               00000007
 GIEH                              00000007
 GIEL                              00000006
 GIE_GIEH                          00000007
@@ -758,13 +772,13 @@ INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
-INT3IP                            00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 14
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+INT3IP                            00000001
 INT3P                             00000001
 INTCON                            00000FF2
 INTCON2                           00000FF1
@@ -797,6 +811,9 @@ KBI0                              00000004
 KBI1                              00000005
 KBI2                              00000006
 KBI3                              00000007
+Keypad_Setup                      00000010
+Keypad_getKey                     0000001A
+Keypad_output                     00000001
 LATA                              00000F89
 LATA0                             00000000
 LATA1                             00000001
@@ -814,16 +831,16 @@ LATB3                             00000003
 LATB4                             00000004
 LATB5                             00000005
 LATB6                             00000006
-LATB7                             00000007
-LATC                              00000F8B
-LATC0                             00000000
-LATC1                             00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 15
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATB7                             00000007
+LATC                              00000F8B
+LATC0                             00000000
+LATC1                             00000001
 LATC2                             00000002
 LATC3                             00000003
 LATC4                             00000004
@@ -873,16 +890,16 @@ LATH6                             00000006
 LATH7                             00000007
 LATJ                              00000F91
 LATJ0                             00000000
-LATJ1                             00000001
-LATJ2                             00000002
-LATJ3                             00000003
-LATJ4                             00000004
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 16
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATJ1                             00000001
+LATJ2                             00000002
+LATJ3                             00000003
+LATJ4                             00000004
 LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
@@ -932,16 +949,16 @@ OBF                               00000006
 ODCON1                            00000F29
 ODCON2                            00000F28
 ODCON3                            00000F27
-OE                                00000001
-OERR                              00000001
-OERR1                             00000001
-OERR2                             00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 17
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+OE                                00000001
+OERR                              00000001
+OERR1                             00000001
+OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
 OSCCON                            00000FD3
@@ -991,16 +1008,16 @@ P3DC4                             00000004
 P3DC5                             00000005
 P3DC6                             00000006
 P3M0                              00000006
-P3M1                              00000007
-P3RSEN                            00000007
-PA3                               00000000
-PADCFG1                           00000F53
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 18
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+P3M1                              00000007
+P3RSEN                            00000007
+PA3                               00000000
+PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
 PC                                00000FF9
@@ -1050,16 +1067,16 @@ PORTH                             00000F87
 PORTJ                             00000F88
 POSTDEC0                          00000FED
 POSTDEC1                          00000FE5
-POSTDEC2                          00000FDD
-POSTINC0                          00000FEE
-POSTINC1                          00000FE6
-POSTINC2                          00000FDE
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 19
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+POSTDEC2                          00000FDD
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
+POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
 PR2                               00000FCB
@@ -1109,16 +1126,16 @@ RA0                               00000000
 RA1                               00000001
 RA2                               00000002
 RA3                               00000003
-RA4                               00000004
-RA5                               00000005
-RA6                               00000006
-RA7                               00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 20
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1168,16 +1185,16 @@ RD2                               00000002
 RD3                               00000003
 RD4                               00000004
 RD5                               00000005
-RD6                               00000006
-RD7                               00000007
-RDPU                              00000007
-RE0                               00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 21
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RD6                               00000006
+RD7                               00000007
+RDPU                              00000007
+RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
@@ -1227,16 +1244,16 @@ RODIV2                            00000002
 RODIV3                            00000003
 ROON                              00000007
 ROSEL                             00000004
-ROSSLP                            00000005
-RSEN                              00000001
-RTCC                              00000004
-RTCCAL                            00000F5E
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 22
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ROSSLP                            00000005
+RSEN                              00000001
+RTCC                              00000004
+RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
 RTCCIF                            00000000
@@ -1286,16 +1303,16 @@ SENDB2                            00000003
 SMP                               00000007
 SOSCEN                            00000003
 SOSCGO                            00000003
-SOSCI                             00000001
-SOSCO                             00000000
-SOSCRUN                           00000006
-SP0                               00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 23
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SOSCI                             00000001
+SOSCO                             00000000
+SOSCRUN                           00000006
+SP0                               00000000
 SP1                               00000001
 SP2                               00000002
 SP3                               00000003
@@ -1345,16 +1362,16 @@ SSPIF                             00000003
 SSPIP                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
-SSPM2                             00000002
-SSPM3                             00000003
-SSPOV                             00000006
-SSPSTAT                           00000FC7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 24
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000FC7
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
@@ -1404,16 +1421,16 @@ T1GCON                            00000FAA
 T1GGO                             00000003
 T1GGO_NOT_T1DONE                  00000003
 T1GPOL                            00000006
-T1GSPM                            00000004
-T1GSS0                            00000000
-T1GSS1                            00000001
-T1GTM                             00000005
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 25
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GSPM                            00000004
+T1GSS0                            00000000
+T1GSS1                            00000001
+T1GTM                             00000005
 T1GVAL                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
@@ -1463,16 +1480,16 @@ T6CON                             00000F39
 T6OUTPS0                          00000003
 T6OUTPS1                          00000004
 T6OUTPS2                          00000005
-T6OUTPS3                          00000006
-T7CKI                             00000004
-T7CKPS0                           00000004
-T7CKPS1                           00000005
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 26
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T6OUTPS3                          00000006
+T7CKI                             00000004
+T7CKPS0                           00000004
+T7CKPS1                           00000005
 T7CON                             00000F3D
 T7G                               00000001
 T7GCON                            00000F3C
@@ -1522,16 +1539,16 @@ TMR1CS1                           00000007
 TMR1GE                            00000007
 TMR1GIE                           00000002
 TMR1GIF                           00000002
-TMR1GIP                           00000002
-TMR1H                             00000FCF
-TMR1IE                            00000000
-TMR1IF                            00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 27
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1GIP                           00000002
+TMR1H                             00000FCF
+TMR1IE                            00000000
+TMR1IF                            00000000
 TMR1IP                            00000000
 TMR1L                             00000FCE
 TMR1MD                            00000001
@@ -1581,16 +1598,16 @@ TMR6IE                            00000002
 TMR6IF                            00000002
 TMR6IP                            00000002
 TMR6MD                            00000004
-TMR6ON                            00000002
-TMR7                              00000F3E
-TMR7CS0                           00000006
-TMR7CS1                           00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 28
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR6ON                            00000002
+TMR7                              00000F3E
+TMR7CS0                           00000006
+TMR7CS1                           00000007
 TMR7GE                            00000007
 TMR7GIE                           00000007
 TMR7GIF                           00000007
@@ -1640,16 +1657,16 @@ TRISC2                            00000002
 TRISC3                            00000003
 TRISC4                            00000004
 TRISC5                            00000005
-TRISC6                            00000006
-TRISC7                            00000007
-TRISD                             00000F95
-TRISD0                            00000000
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 29
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000F95
+TRISD0                            00000000
 TRISD1                            00000001
 TRISD2                            00000002
 TRISD3                            00000003
@@ -1699,16 +1716,16 @@ TRISJ5                            00000005
 TRISJ6                            00000006
 TRISJ7                            00000007
 TRMT                              00000001
-TRMT1                             00000001
-TRMT2                             00000001
-TUN0                              00000000
-TUN1                              00000001
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 30
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRMT1                             00000001
+TRMT2                             00000001
+TUN0                              00000000
+TUN1                              00000001
 TUN2                              00000002
 TUN3                              00000003
 TUN4                              00000004
@@ -1758,16 +1775,16 @@ VDIRMAG                           00000007
 VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
-W                                 00000000
-WAIT0                             00000004
-WAIT1                             00000005
-WCOL                              00000007
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 31
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+W                                 00000000
+WAIT0                             00000004
+WAIT1                             00000005
+WCOL                              00000007
 WDTCON                            00000FD1
 WM0                               00000000
 WM1                               00000001
@@ -1817,16 +1834,16 @@ _CONFIG7L                         0030000C
 _CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
 _CP1_OFF_5L                       000000FF
-_CP1_ON_5L                        000000FD
-_CP2_OFF_5L                       000000FF
-_CP2_ON_5L                        000000FB
-_CP3_OFF_5L                       000000FF
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 32
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CP1_ON_5L                        000000FD
+_CP2_OFF_5L                       000000FF
+_CP2_ON_5L                        000000FB
+_CP3_OFF_5L                       000000FF
 _CP3_ON_5L                        000000F7
 _CP4_OFF_5L                       000000FF
 _CP4_ON_5L                        000000EF
@@ -1876,16 +1893,16 @@ _FOSC_EC3IO_1H                    000000F4
 _FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
 _FOSC_HS2_1H                      000000F2
-_FOSC_INTIO1_1H                   000000F9
-_FOSC_INTIO2_1H                   000000F8
-_FOSC_LP_1H                       000000F0
-_FOSC_RCIO_1H                     000000F7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 33
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_INTIO1_1H                   000000F9
+_FOSC_INTIO2_1H                   000000F8
+_FOSC_LP_1H                       000000F0
+_FOSC_RCIO_1H                     000000F7
 _FOSC_RC_1H                       000000F6
 _FOSC_XT_1H                       000000F1
 _IDLOC0                           00200000
@@ -1935,16 +1952,16 @@ _WDTPS_256_2H                     000000A3
 _WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
 _WDTPS_32768_2H                   000000BF
-_WDTPS_32_2H                      00000097
-_WDTPS_4096_2H                    000000B3
-_WDTPS_4_2H                       0000008B
-_WDTPS_512_2H                     000000A7
-MPASM 5.81                        CONFIG.ASM   11-14-2019  14:30:48         PAGE 34
+MPASM 5.81                        KEYPAD.ASM   11-14-2019  14:30:49         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_32_2H                      00000097
+_WDTPS_4096_2H                    000000B3
+_WDTPS_4_2H                       0000008B
+_WDTPS_512_2H                     000000A7
 _WDTPS_524288_2H                  000000CF
 _WDTPS_64_2H                      0000009B
 _WDTPS_65536_2H                   000000C3
@@ -1975,6 +1992,17 @@ _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
+column0                           00000062
+column1                           0000006E
+column2                           0000007A
+column3                           00000086
+decoder                           00000090
+get_column                        00000056
+key                               00000000
+key_fail                          0000009C
+row1                              00000032
+row2                              0000003E
+row3                              0000004A
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
