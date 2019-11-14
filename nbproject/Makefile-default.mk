@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=config.asm LCD.asm Keypad.asm Simple1.asm //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm
+SOURCEFILES_QUOTED_IF_SPACED=config.asm LCD.asm Keypad.asm GameData.asm Music.asm Main.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/Simple1.o ${OBJECTDIR}/_ext/2011413172/Keypad.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/config.o.d ${OBJECTDIR}/LCD.o.d ${OBJECTDIR}/Keypad.o.d ${OBJECTDIR}/Simple1.o.d ${OBJECTDIR}/_ext/2011413172/Keypad.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/GameData.o ${OBJECTDIR}/Music.o ${OBJECTDIR}/Main.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/config.o.d ${OBJECTDIR}/LCD.o.d ${OBJECTDIR}/Keypad.o.d ${OBJECTDIR}/GameData.o.d ${OBJECTDIR}/Music.o.d ${OBJECTDIR}/Main.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/Simple1.o ${OBJECTDIR}/_ext/2011413172/Keypad.o
+OBJECTFILES=${OBJECTDIR}/config.o ${OBJECTDIR}/LCD.o ${OBJECTDIR}/Keypad.o ${OBJECTDIR}/GameData.o ${OBJECTDIR}/Music.o ${OBJECTDIR}/Main.o
 
 # Source Files
-SOURCEFILES=config.asm LCD.asm Keypad.asm Simple1.asm //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm
+SOURCEFILES=config.asm LCD.asm Keypad.asm GameData.asm Music.asm Main.asm
 
 
 CFLAGS=
@@ -118,21 +118,29 @@ ${OBJECTDIR}/Keypad.o: Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d "${OBJECTDIR}/Keypad.o"
 	@${FIXDEPS} "${OBJECTDIR}/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-${OBJECTDIR}/Simple1.o: Simple1.asm  nbproject/Makefile-${CND_CONF}.mk
+${OBJECTDIR}/GameData.o: GameData.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/Simple1.o.d 
-	@${RM} ${OBJECTDIR}/Simple1.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Simple1.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Simple1.lst\" -e\"${OBJECTDIR}/Simple1.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Simple1.o\" \"Simple1.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/Simple1.o"
-	@${FIXDEPS} "${OBJECTDIR}/Simple1.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	@${RM} ${OBJECTDIR}/GameData.o.d 
+	@${RM} ${OBJECTDIR}/GameData.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/GameData.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/GameData.lst\" -e\"${OBJECTDIR}/GameData.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/GameData.o\" \"GameData.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/GameData.o"
+	@${FIXDEPS} "${OBJECTDIR}/GameData.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-${OBJECTDIR}/_ext/2011413172/Keypad.o: //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}/_ext/2011413172" 
-	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o.d 
-	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/2011413172/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/2011413172/Keypad.lst\" -e\"${OBJECTDIR}/_ext/2011413172/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/2011413172/Keypad.o\" \"//icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/_ext/2011413172/Keypad.o"
-	@${FIXDEPS} "${OBJECTDIR}/_ext/2011413172/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+${OBJECTDIR}/Music.o: Music.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Music.o.d 
+	@${RM} ${OBJECTDIR}/Music.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Music.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Music.lst\" -e\"${OBJECTDIR}/Music.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Music.o\" \"Music.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Music.o"
+	@${FIXDEPS} "${OBJECTDIR}/Music.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/Main.o: Main.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Main.o.d 
+	@${RM} ${OBJECTDIR}/Main.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Main.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Main.lst\" -e\"${OBJECTDIR}/Main.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Main.o\" \"Main.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Main.o"
+	@${FIXDEPS} "${OBJECTDIR}/Main.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 else
 ${OBJECTDIR}/config.o: config.asm  nbproject/Makefile-${CND_CONF}.mk
@@ -159,21 +167,29 @@ ${OBJECTDIR}/Keypad.o: Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d "${OBJECTDIR}/Keypad.o"
 	@${FIXDEPS} "${OBJECTDIR}/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-${OBJECTDIR}/Simple1.o: Simple1.asm  nbproject/Makefile-${CND_CONF}.mk
+${OBJECTDIR}/GameData.o: GameData.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/Simple1.o.d 
-	@${RM} ${OBJECTDIR}/Simple1.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Simple1.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Simple1.lst\" -e\"${OBJECTDIR}/Simple1.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Simple1.o\" \"Simple1.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/Simple1.o"
-	@${FIXDEPS} "${OBJECTDIR}/Simple1.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	@${RM} ${OBJECTDIR}/GameData.o.d 
+	@${RM} ${OBJECTDIR}/GameData.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/GameData.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/GameData.lst\" -e\"${OBJECTDIR}/GameData.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/GameData.o\" \"GameData.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/GameData.o"
+	@${FIXDEPS} "${OBJECTDIR}/GameData.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
-${OBJECTDIR}/_ext/2011413172/Keypad.o: //icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}/_ext/2011413172" 
-	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o.d 
-	@${RM} ${OBJECTDIR}/_ext/2011413172/Keypad.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/2011413172/Keypad.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/2011413172/Keypad.lst\" -e\"${OBJECTDIR}/_ext/2011413172/Keypad.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/2011413172/Keypad.o\" \"//icnas4.cc.ic.ac.uk/sjy115/Desktop/Microprocessor/Project/Keypad.asm\" 
-	@${DEP_GEN} -d "${OBJECTDIR}/_ext/2011413172/Keypad.o"
-	@${FIXDEPS} "${OBJECTDIR}/_ext/2011413172/Keypad.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+${OBJECTDIR}/Music.o: Music.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Music.o.d 
+	@${RM} ${OBJECTDIR}/Music.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Music.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Music.lst\" -e\"${OBJECTDIR}/Music.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Music.o\" \"Music.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Music.o"
+	@${FIXDEPS} "${OBJECTDIR}/Music.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/Main.o: Main.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/Main.o.d 
+	@${RM} ${OBJECTDIR}/Main.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/Main.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/Main.lst\" -e\"${OBJECTDIR}/Main.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/Main.o\" \"Main.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/Main.o"
+	@${FIXDEPS} "${OBJECTDIR}/Main.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 
