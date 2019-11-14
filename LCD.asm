@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll
+    global LCD_Initialisation, input_cmd, input_data, New_Box, Scroll, Goal_setup
     extern Delay_ms, SPI_writeREG, Keypad_getKey, Keypad_output
 
 ;Data sheet definition (register array, pin, constant)
@@ -241,11 +241,6 @@
 #define	box_height		.10
 #define	box_xoffset		.100
 #define	box_yoffset		.50
-    
-#define	scroll_yend_l		.144
-#define	scroll_yend_h		.1
-    
-#define	scroll_speed		.2
 
 ;register 'Box' bit location
 #define	Box_x1	    0
@@ -256,7 +251,8 @@
 #define	Box_y3	    5
 #define	Box_colour  6
 
-#define	LYEN 0	; 0: layer 1 active, 1: layer 2 active
+#define	active_layer 0	; To define active layer that must be scrolled 
+			;(high --> layer 2 active)
 
 acs0    udata_acs   ; reserve data space in access ram
 input_cmd	    res 1
@@ -272,15 +268,6 @@ rect_y1_l	    res 1
 rect_x2_l	    res 1
 rect_y2_l	    res 1
 rect_colour	    res 1
-	    
-line_x1_h	    res 1
-line_y1_h	    res 1
-line_x2_h	    res 1
-line_y2_h	    res 1
-line_x1_l	    res 1
-line_y1_l	    res 1
-line_x2_l	    res 1
-line_y2_l	    res 1
 	    
 Scroll_d_l	    res 1
 Scroll_d_h	    res 1
@@ -348,7 +335,7 @@ LYEN1
     movlw   .0				;layer 1
     movwf   input_data
     call    SPI_writeREG
-    return
+    bra	    SetLayer
     
 LYEN2
     movlw   0x41
@@ -356,92 +343,67 @@ LYEN2
     movlw   .1				;layer 2
     movwf   input_data
     call    SPI_writeREG
-    return
-    
+    bra	    SetLayer
 Colour1
     movlw   b'00000111'
     bra	    SetColour
     
 ;Scroll next layer
 Scroll
-    movlw   scroll_yend_l
+    btfss   Control, active_layer
+    bra	    scroll2
+    
+    movlw   .203
     movwf   Scroll_d_l
-    movlw   scroll_yend_h
+    movlw   .1
     movwf   Scroll_d_h
     movlw   0x00		; W=0	
 scrl
     call    LCD_ScrollY
-    movlw   scroll_speed
+    movlw   .5
     call    Delay_ms
     decf    Scroll_d_l, F	; borrow when 0x00 -> 0xff
     subwfb  Scroll_d_h, F	; no carry when 0x00 -> 0xff
-    ;call    test_keypad
+    call    test_keypad
     bc	    scrl
-    
-    btg	    Control, LYEN
-    btfss   Control, LYEN
+    btg	    Control, active_layer
+    btfss   Control, active_layer
     bra	    ly1
     call    LYEN2
 cly call    Clear_Layer
     return
-
-;temporary subroutine
+    
 ly1 call    LYEN1
     bra	    cly
 
-Clear_Layer
-    movlw   .0
-    movwf   rect_x1_l
-    movlw   .0
-    movwf   rect_x1_h
-    movlw   .0
-    movwf   rect_y1_l
-    movlw   .0
-    movwf   rect_y1_h
-    movlw   .31
-    movwf   rect_x2_l
+test_keypad
+    call    Decode             
+    call    Keypad_getKey
+    
+;temporary subroutine
+scroll2
+    movlw   .151
+    movwf   Scroll_d_l
     movlw   .3
-    movwf   rect_x2_h
-    movlw   scroll_yend_l
-    movwf   rect_y2_l
-    movlw   scroll_yend_h
-    movwf   rect_y2_h
-    clrf    rect_colour
-    call    LCD_RectHelper
-    movlw   .5
-    call    Delay_ms
-    return
+    movwf   Scroll_d_h
+    movlw   0x00		; W=0	
+    bra	    scrl
 
     
-LCD_ScrollY  
-    movlw   0x26
+Clear_Layer
+    movlw   0x8E
     movwf   input_cmd
-    movff   Scroll_d_l, input_data
-    btfsc   Control, LYEN
-    call    tmp1
-    call    SPI_writeREG
-    movlw   0x27
-    movwf   input_cmd
-    movff   Scroll_d_h, input_data
-    btfsc   Control, LYEN
-    call    tmp2
+    btfss   Control,active_layer
+    bra	    cl1
+    movlw   b'11000000'
+cl2 movwf   input_data
     call    SPI_writeREG
     return
     
-tmp1
-    movlw   scroll_yend_l
-    addwf   Scroll_d_l, W
-    movwf   input_data
-    return
+;temporary subroutine
+cl1 movlw   b'10000000'
+    bra	    cl2
     
-tmp2
-    movlw   scroll_yend_h
-    addwfc  Scroll_d_h, W
-    movwf   input_data
-    return
-
-    
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 LCD_RectHelper
     ;/* Set X1 */
     movlw   0x91
@@ -486,7 +448,7 @@ LCD_RectHelper
     ;/* Set r1 */
     movlw   0xA1
     movwf   input_cmd
-    movlw   .5
+    movlw   .2
     movwf   input_data
     call    SPI_writeREG
     movlw   0xA2
@@ -498,7 +460,7 @@ LCD_RectHelper
     ;/* Set r2 */
     movlw   0xA3
     movwf   input_cmd
-    movlw   .5
+    movlw   .2	
     movwf   input_data
     call    SPI_writeREG
     movlw   0xA4
@@ -551,13 +513,13 @@ LCD_LineHelper
     movwf   input_cmd
     movlw   .0
     movwf   input_data
-    movff   line_x1_l, input_data
+    ;movff   line_x1_l, input_data
     call    SPI_writeREG
     movlw   0x92
     movwf   input_cmd
     movlw   .0
     movwf   input_data
-    movff   line_x1_h, input_data
+    ;movff   line_x1_h, input_data
     movwf   input_data
     call    SPI_writeREG
     
@@ -566,14 +528,14 @@ LCD_LineHelper
     movwf   input_cmd
     movlw   .0
     movwf   input_data
-    movff   line_y1_l, input_data
+    ;movff   line_y1_l, input_data
     movwf   input_data
     call    SPI_writeREG
     movlw   0x94
     movwf   input_cmd
     movlw   .0
     movwf   input_data
-    movff   line_y1_h, input_data
+    ;movff   line_y1_h, input_data
     movwf   input_data
     call    SPI_writeREG
 
@@ -582,14 +544,14 @@ LCD_LineHelper
     movwf   input_cmd
     movlw   .31
     movwf   input_data
-    movff   line_x2_l, input_data
+    ;movff   line_x2_l, input_data
     movwf   input_data
     call    SPI_writeREG
     movlw   0x96
     movwf   input_cmd
     movlw   .3
     movwf   input_data
-    movff   line_x2_h, input_data
+    ;movff   line_x2_h, input_data
     movwf   input_data
     call    SPI_writeREG
 
@@ -598,14 +560,14 @@ LCD_LineHelper
     movwf   input_cmd
     movlw   .223
     movwf   input_data
-    movff   line_y2_l, input_data
+    ;movff   line_y2_l, input_data
     movwf   input_data
     call    SPI_writeREG
     movlw   0x98
     movwf   input_cmd
     movlw   .1
     movwf   input_data
-    movff   line_y2_h, input_data
+    ;movff   line_y2_h, input_data
     movwf   input_data
     call    SPI_writeREG
     
@@ -764,7 +726,7 @@ LCD_Initialisation
     ; Clear the entire window
     movlw   RA8875_MCLR
     movwf   input_cmd
-    movlw   b'11000000';
+    movlw   (RA8875_MCLR_START | RA8875_MCLR_FULL);
     movwf   input_data
     call    SPI_writeREG
     movlw   .250
@@ -778,11 +740,6 @@ LCD_Initialisation
     call    LCD_PWM1out
     call    LCD_SetScrollWindow
     call    LCD_TwoLayers
-    
-    bcf	    Control, LYEN
-    call    LYEN2
-    call    Clear_Layer
-    call    LYEN1
     return
     
 LCD_PLLinit
@@ -876,12 +833,12 @@ LCD_SetScrollWindow
     ;// Vertical End Point of Scroll Window
     movlw   0x3E
     movwf   input_cmd
-    movlw   scroll_yend_l
+    movlw   .203
     movwf   input_data
     call    SPI_writeREG
     movlw   0x3F
     movwf   input_cmd
-    movlw   scroll_yend_h
+    movlw   .1
     movwf   input_data
     call    SPI_writeREG
 
@@ -905,5 +862,60 @@ LCD_TwoLayers
     movwf   input_data
     call    SPI_writeREG
     return
+    
+LCD_ScrollY  
+    movlw   0x26
+    movwf   input_cmd
+    movff   Scroll_d_l, input_data
+    call    SPI_writeREG
+    movlw   0x27
+    movwf   input_cmd
+    movff   Scroll_d_h, input_data
+    call    SPI_writeREG
+    return
+  
+Goal_setup
+    movlw   0b'00110000'
+    call    New_Box
+    movlw   0b'00111001'
+    call    New_Box
+    movlw   0b'00110010'
+    call    New_Box
+    movlw   0b'00111011'
+    call    New_Box
+    movlw   0b'00110100'
+    call    New_Box
+    movlw   0b'00111101'
+    call    New_Box
+    movlw   0b'00110110'
+    call    New_Box
+    movlw   0b'00111111'
+    call    New_Box
+    return
+
+decode    
+
+k1  movlw   0b'0000'
+    cpfseq  Keypad_output
+    bra	    k2
+    bra	    Score
+    
+k2  movlw   0b'0001'
+    cpfseq  Keypad_output
+    bra	    k3
+    bra	    Score
+    
+k3  movlw   0b'0010'
+    cpfseq  Keypad_output
+    bra	    Score
+    
+Score
+    movlw  .1
+    addwf  scr_cnt
+    return
+
+    
+    
+    
     end
 

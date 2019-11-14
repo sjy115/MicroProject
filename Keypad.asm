@@ -6,18 +6,18 @@
     
 acs0    udata_acs   ; reserve data space in access ram
 key	res 1
-Keypad_output res 1
+
 	
 Keypad  code
   ; 
-    db  b'1111', b'1101', b'0111', b'0101', b'1110', b'1100', b'0110', b'0100', b'1011', b'1001', b'0011', b'0001', b'1010', b'1000', b'0010', b'0000'
+db  b'1111', b'1101', b'0111', b'0101', b'1110', b'1100', b'0110', b'0100', b'1011', b'1001', b'0011', b'0001', b'1010', b'1000', b'0010', b'0000'
 	
 Keypad_Setup
-    banksel	PADCFG1
-    bsf		PADCFG1,REPU,BANKED
-    bcf		EECON1, CFGS		; point to Flash program memory  
-    bsf		EECON1, EEPGD		; access Flash program memory
-    return
+	banksel	PADCFG1
+	bsf	PADCFG1,REPU,BANKED
+	bcf	EECON1, CFGS	; point to Flash program memory  
+	bsf	EECON1, EEPGD 	; access Flash program memory
+	return
 	
 	
 Keypad_getKey
@@ -25,7 +25,7 @@ Keypad_getKey
 	movlw	0x0F
 	movwf	TRISE
 	movlw	.100
-	call	Delay_ms
+	call	LCD_delay_ms
 	;row0
 	movlw	b'1110'
 	cpfseq	PORTE
@@ -56,7 +56,7 @@ get_column
 	movlw	0xF0
 	movwf	TRISE
 	movlw	.100
-	call	Delay_ms
+	call	LCD_delay_ms
 column0	movlw	b'11100000'
 	cpfseq	PORTE
 	bra	column1
@@ -89,7 +89,7 @@ decoder	tblrd*+
 
 key_fail
 	movlw	.0
-	;movwf	Keypad_fail_flag
+	movwf	Keypad_fail_flag
 	return
 	end
 	
